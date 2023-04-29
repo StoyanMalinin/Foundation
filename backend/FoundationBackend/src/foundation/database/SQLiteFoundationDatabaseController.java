@@ -59,6 +59,31 @@ public class SQLiteFoundationDatabaseController implements FoundationDatabaseCon
     }
 
     @Override
+    public Search getSearchById(int id) throws SQLException {
+        return searchesDao.queryForId(id);
+    }
+
+    @Override
+    public User getUserById(int id) throws SQLException {
+        return usersDao.queryForId(id);
+    }
+
+    @Override
+    public Presence getPresenceById(int id) throws SQLException {
+        return presenceDao.queryForId(id);
+    }
+
+    @Override
+    public SearchToPresence getSearchToPresenceById(int id) throws SQLException {
+        return searchToPresenceDao.queryForId(id);
+    }
+
+    @Override
+    public Position getPositionById(int id) throws SQLException {
+        return positionsDao.queryForId(id);
+    }
+
+    @Override
     public List<Presence> getAllPresencesOfSearch(int searchId) throws SQLException {
         PreparedQuery<SearchToPresence> query = searchToPresenceDao.queryBuilder()
                 .where().eq("searchId", searchId).prepare();
@@ -91,6 +116,51 @@ public class SQLiteFoundationDatabaseController implements FoundationDatabaseCon
     @Override
     public void updatePosition(Position position) throws SQLException {
         positionsDao.update(position);
+    }
+
+    @Override
+    public void updateUser(User user) throws SQLException {
+        usersDao.update(user);
+    }
+
+    @Override
+    public void updateSearch(Search search) throws SQLException {
+        searchesDao.update(search);
+    }
+
+    @Override
+    public void updateSearchToPresence(SearchToPresence searchToPresence) throws SQLException {
+        searchToPresenceDao.update(searchToPresence);
+    }
+
+    @Override
+    public void updatePresence(Presence presence) throws SQLException {
+        presenceDao.update(presence);
+    }
+
+    @Override
+    public void insertUser(User user) throws SQLException {
+        usersDao.create(user);
+    }
+
+    @Override
+    public void insertSearch(Search search) throws SQLException {
+        searchesDao.create(search);
+    }
+
+    @Override
+    public void insertPosition(Position position) throws SQLException {
+        positionsDao.create(position);
+    }
+
+    @Override
+    public void insertPresence(Presence presence) throws SQLException {
+        presenceDao.create(presence);
+    }
+
+    @Override
+    public void insertSearchToPresence(SearchToPresence searchToPresence) throws SQLException {
+        searchToPresenceDao.create(searchToPresence);
     }
 
     @Override

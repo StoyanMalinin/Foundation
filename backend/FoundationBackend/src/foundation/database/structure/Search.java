@@ -12,7 +12,7 @@ public class Search {
     private int id;
 
     @DatabaseField
-    private String title;
+    public String title;
 
     @DatabaseField
     private String description;
