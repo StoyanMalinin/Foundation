@@ -36,10 +36,9 @@ public class MapImageColorizer {
         final double searchSz = 1e4;
 
         BoundingBox boundingBox = TileGridUtils.getBoundingBox(x, y, searchSz);
-        //List<Presence> presences = dbController.getAllPresencesOfSearchInsideBoundingBox(search.id(),
-        //        boundingBox.minX(), boundingBox.maxX(),
-        //        boundingBox.minY(), boundingBox.maxY());
-        List<Presence> presences = dbController.getAllPresencesOfSearch(search.id());
+        List<Presence> presences = dbController.getAllPresencesOfSearchInsideBoundingBox(search.id(),
+                boundingBox.minX(), boundingBox.maxX(),
+                boundingBox.minY(), boundingBox.maxY());
 
         return presences.stream()
                 .map(p ->

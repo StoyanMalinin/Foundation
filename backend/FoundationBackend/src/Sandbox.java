@@ -26,9 +26,9 @@ public class Sandbox {
             MapImageGetter mapImageGetter = new TomTomMapImageGetter();
             MapImageColorizer mapImageColorizer = new MapImageColorizer(dbController, dbController.getSearchById(1));
 
-            final double sz = 500;
-            final double lat = 41.76797529308914;
-            final double lon = 26.20512482624002;
+            final double sz = 1000;
+            final double lat = 41.76795371636188;
+            final double lon = 26.204573303326818;
 
             /*
             for (int i = 0; i < 100; i++) {
