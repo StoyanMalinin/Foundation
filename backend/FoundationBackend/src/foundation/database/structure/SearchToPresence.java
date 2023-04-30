@@ -8,7 +8,7 @@ import java.rmi.server.ServerNotActiveException;
 
 @DatabaseTable(tableName = "search_to_presence")
 public class SearchToPresence {
-    @DatabaseField(id = true)
+    @DatabaseField(generatedId = true)
     private int id;
 
     @DatabaseField(foreign = true, foreignAutoCreate = true,

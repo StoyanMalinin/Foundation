@@ -8,7 +8,7 @@ import javax.sql.rowset.serial.SerialArray;
 
 @DatabaseTable(tableName = "searches")
 public class Search {
-    @DatabaseField(id = true)
+    @DatabaseField(generatedId = true)
     private int id;
 
     @DatabaseField

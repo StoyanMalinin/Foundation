@@ -5,18 +5,48 @@ import com.j256.ormlite.table.DatabaseTable;
 
 @DatabaseTable(tableName = "position_index")
 public class Position {
-    @DatabaseField(id = true)
-    public int id;
+    @DatabaseField(generatedId = true)
+    private int id;
 
     @DatabaseField
-    public double minX;
+    private double minX;
 
     @DatabaseField
-    public double maxX;
+    private double maxX;
 
     @DatabaseField
-    public double minY;
+    private double minY;
 
     @DatabaseField
-    public double maxY;
+    private double maxY;
+
+    public Position() {
+
+    }
+    public Position(double minX, double maxX, double minY, double maxY) {
+        this.minX = minX;
+        this.maxX = maxX;
+        this.minY = minY;
+        this.maxY = maxY;
+    }
+
+    public int id() {
+        return id;
+    }
+
+    public double minX() {
+        return minX;
+    }
+
+    public double maxX() {
+        return maxX;
+    }
+
+    public double minY() {
+        return minY;
+    }
+
+    public double maxY() {
+        return maxY;
+    }
 }
