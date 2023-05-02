@@ -6,7 +6,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.function.Predicate;
 
-public interface FoundationDatabaseController {
+public interface FoundationDatabaseController extends AutoCloseable {
     List<Search> getAllSearches() throws SQLException;
     List<Presence> getAllPresences() throws SQLException;
     List<Position> getAllPositions() throws SQLException;
