@@ -54,7 +54,8 @@ public class MapImageColorizer {
                 .reduce(0.0, Double::sum);
     }
 
-    public void colorizeImage(BufferedImage img, BoundingBox imgBoundingBox, int vertRes, int horRes, long currTimestamp) throws Exception {
+    public void colorizeImage(BufferedImage img, BoundingBox imgBoundingBox,
+                              int vertRes, int horRes, long currTimestamp) throws Exception {
         final int zoomLevel = 20;
 
         double[][] tileCoef = new double[vertRes][horRes];

@@ -12,6 +12,8 @@ import static spark.Spark.*;
 public class Main {
     public static void main(String[] args) {
 
+        port(6969);
+
         String dbConnectionString = "jdbc:sqlite:../db/db_foundation - Copy.db";
         try (FoundationDatabaseController dbController = new SQLiteFoundationDatabaseController(dbConnectionString);) {
 

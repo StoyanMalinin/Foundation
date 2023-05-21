@@ -27,10 +27,11 @@ public class EndpointController {
 
     public String handleMapImage(Request request, Response response) {
 
+        response.header("Access-Control-Allow-Origin", "*");
+
         double sz = 1;
         double lat = 0;
         double lon = 0;
-
         int searchId = -1;
 
         if (!request.queryParams().contains("searchId")) {

@@ -1,0 +1,57 @@
+<html>
+
+   <head>
+      <title>JavaScript Internal Script</title>
+      <base href = "https://www.tutorialspoint.com/" />
+      
+      <script type = "text/JavaScript">
+         function handleRefreshOnClick() {         
+            var latitude = parseFloat(document.getElementById("latitude").value);
+            var longtitude = parseFloat(document.getElementById("longtitude").value);
+            var size = parseFloat(document.getElementById("size").value);
+            var searchId = parseInt(document.getElementById("searchId").value);
+
+            var xhr = new XMLHttpRequest();
+            var method = 'GET';
+            var url = `http://localhost:6969/map?searchId=${searchId}&lat=${latitude}&lon=${longtitude}&sz=${size}`;
+
+            xhr.onload = function() {
+            if (xhr.status === 200) {
+               var blob = new Blob([xhr.response], { type: 'image/png' }); // Adjust the content type if necessary
+
+               // Create a URL for the Blob object
+               var imageUrl = URL.createObjectURL(blob);
+
+               // Update the src attribute of the image element
+               var imageElement = document.getElementById('mapImage');
+               imageElement.src = imageUrl;
+            } else {
+               console.log('Error: ' + xhr.status);
+            }
+            };
+
+            xhr.open(method, url, true);
+            xhr.responseType = 'arraybuffer'; 
+            xhr.send();
+         }
+      </script>
+   </head>
+
+   <body>
+      <div>
+         <input type="number" id="latitude">Latitude</input>
+         <input type="number" id="longtitude">Longtitude</input>
+         <input type="number" id="size">Size</input>
+         <input type="number" id="searchId">SearchId</input>
+      </div>
+      <div>
+         <img src = "https://cdn.discordapp.com/attachments/532196135209664527/1109827484012261396/346158653_144117388581813_4484277376269539907_n.png" id = "mapImage"></img>
+      </div>
+      <div>
+         <button type="button" onclick="handleRefreshOnClick()">Refresh</button>
+      </div>
+   <p id="demo"></p>
+      
+   </body>
+
+</html>
