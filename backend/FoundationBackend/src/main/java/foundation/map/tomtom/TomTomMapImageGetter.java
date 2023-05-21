@@ -36,7 +36,7 @@ public class TomTomMapImageGetter implements MapImageGetter {
 
     public BufferedImage getMapByGrid(int x, int y, int z) throws Exception {
 
-        System.out.println(x + ", " + y);
+        //System.out.println(x + ", " + y);
 
         HttpResponse response = sendRequest(MapImageAPIQuery.builder().x(x).y(y).z(z).build());
 

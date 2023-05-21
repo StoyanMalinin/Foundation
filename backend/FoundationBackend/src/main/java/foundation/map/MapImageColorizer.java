@@ -1,5 +1,6 @@
 package foundation.map;
 
+import com.j256.ormlite.dao.Dao;
 import com.peertopark.java.geocalc.DegreeCoordinate;
 import com.peertopark.java.geocalc.EarthCalc;
 import com.peertopark.java.geocalc.Point;
@@ -54,10 +55,23 @@ public class MapImageColorizer {
                 .reduce(0.0, Double::sum);
     }
 
+    private static Position<Double> clipPositionToTileCenter(int zoomLevel, double x, double y) {
+        Position<Integer> tilePosition = TileGridUtils.latLonToTileZXY(y, x, zoomLevel);
+        BoundingBox tileBoundingBox = TileGridUtils.tileZXYToLatLonBBox(zoomLevel,
+                tilePosition.x(), tilePosition.y());
+
+        double queryPosX = (tileBoundingBox.minX() + tileBoundingBox.maxX()) / 2;
+        double queryPosY = (tileBoundingBox.minY() + tileBoundingBox.maxY()) / 2;
+
+        return new Position(queryPosX, queryPosY);
+    }
+
     public void colorizeImage(BufferedImage img, BoundingBox imgBoundingBox,
                               int vertRes, int horRes, long currTimestamp) throws Exception {
-        final int zoomLevel = 20;
+        System.out.println(imgBoundingBox.minX() + " --- " + imgBoundingBox.maxX() + ", "
+                + imgBoundingBox.minY() + " --- " + imgBoundingBox.maxY());
 
+        final int zoomLevel = 20;
         double[][] tileCoef = new double[vertRes][horRes];
 
         for (int i = 0; i < vertRes; i++) {
@@ -65,16 +79,10 @@ public class MapImageColorizer {
                 double posX = imgBoundingBox.minX()
                         + (imgBoundingBox.maxX() - imgBoundingBox.minX()) / horRes * (j + 0.5);
                 double posY = imgBoundingBox.minY()
-                        + (imgBoundingBox.maxY() - imgBoundingBox.minY()) / vertRes * (i + 0.5);
+                        + (imgBoundingBox.maxY() - imgBoundingBox.minY()) / vertRes * ((vertRes - i - 1) + 0.5);
+                Position<Double> queryPosition = clipPositionToTileCenter(zoomLevel, posX, posY);
 
-                Position<Integer> tilePosition = TileGridUtils.latLonToTileZXY(posY, posX, zoomLevel);
-                BoundingBox tileBoundingBox = TileGridUtils.tileZXYToLatLonBBox(zoomLevel,
-                        tilePosition.x(), tilePosition.y());
-
-                double queryPosX = (tileBoundingBox.minX() + tileBoundingBox.maxX()) / 2;
-                double queryPosY = (tileBoundingBox.minY() + tileBoundingBox.maxY()) / 2;
-                double coef = evalCoef(queryPosX, queryPosY, currTimestamp);
-
+                double coef = evalCoef(queryPosition.x(), queryPosition.y(), currTimestamp);
                 tileCoef[i][j] = coef;
             }
         }
