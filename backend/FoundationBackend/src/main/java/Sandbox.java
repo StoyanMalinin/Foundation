@@ -2,12 +2,10 @@ import com.j256.ormlite.jdbc.JdbcConnectionSource;
 import com.j256.ormlite.support.ConnectionSource;
 import foundation.database.FoundationDatabaseController;
 import foundation.database.SQLiteFoundationDatabaseController;
-import foundation.database.structure.Position;
-import foundation.database.structure.Presence;
-import foundation.database.structure.SearchToPresence;
 import foundation.map.MapImageColorizer;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.TileGridUtils;
+import foundation.map.tomtom.BaiscTomTomAPICommunicator;
 import foundation.map.tomtom.TomTomMapImageGetter;
 
 import javax.imageio.ImageIO;
@@ -23,7 +21,8 @@ public class Sandbox {
 
             FoundationDatabaseController dbController = new SQLiteFoundationDatabaseController(databaseUrl);
 
-            MapImageGetter mapImageGetter = new TomTomMapImageGetter();
+            BaiscTomTomAPICommunicator tomtomAPI = new BaiscTomTomAPICommunicator();
+            MapImageGetter mapImageGetter = new TomTomMapImageGetter(tomtomAPI);
             MapImageColorizer mapImageColorizer = new MapImageColorizer(dbController, dbController.getSearchById(1));
 
             final double sz = 1000;

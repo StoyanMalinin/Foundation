@@ -1,59 +1,20 @@
 package foundation.map.tomtom;
 
-import com.peertopark.java.geocalc.*;
 import foundation.map.BoundingBox;
 import foundation.map.MapImageGetter;
 
-import javax.imageio.ImageIO;
-import java.awt.color.ColorSpace;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
 
 public class TomTomMapImageGetter implements MapImageGetter {
 
-    private static final String API_KEY = "pGjCPMXkBdcms0zeNqcy7VHQGmoqnUC4";
+    TomTomAPICommunicator api;
 
-    private HttpClient httpClient;
-
-    public TomTomMapImageGetter() {
-        this.httpClient = HttpClient.newHttpClient();
-    }
-
-    private HttpResponse sendRequest(APIQuery query) throws IOException, InterruptedException {
-
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(query.toURL(API_KEY)))
-                .build();
-
-        return httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
-    }
-
-    public BufferedImage getMapByGrid(int x, int y, int z) throws Exception {
-
-        //System.out.println(x + ", " + y);
-
-        HttpResponse response = sendRequest(MapImageAPIQuery.builder().x(x).y(y).z(z).build());
-
-        final int successStatusCode = 200;
-
-        if (response.statusCode() == successStatusCode) {
-            BufferedImage image = ImageIO.read(new ByteArrayInputStream((byte[]) response.body()));
-            return image;
-        } else {
-            System.out.println("fak");
-        }
-
-        return null;
+    public TomTomMapImageGetter(TomTomAPICommunicator api) {
+        this.api = api;
     }
 
     public BufferedImage getMapByGrid(Position<Integer> position, int z) throws Exception {
-        return getMapByGrid(position.x(), position.y(), z);
+        return api.getMapByGrid(position.x(), position.y(), z);
     }
 
     @Override
