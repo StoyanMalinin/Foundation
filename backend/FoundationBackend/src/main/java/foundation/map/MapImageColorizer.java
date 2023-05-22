@@ -68,9 +68,6 @@ public class MapImageColorizer {
 
     public void colorizeImage(BufferedImage img, BoundingBox imgBoundingBox,
                               int vertRes, int horRes, long currTimestamp) throws Exception {
-        System.out.println(imgBoundingBox.minX() + " --- " + imgBoundingBox.maxX() + ", "
-                + imgBoundingBox.minY() + " --- " + imgBoundingBox.maxY());
-
         final int zoomLevel = 20;
         double[][] tileCoef = new double[vertRes][horRes];
 

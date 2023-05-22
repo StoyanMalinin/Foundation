@@ -8,13 +8,12 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 
 public class CachedTomTomAPICommunicator implements TomTomAPICommunicator {
     private TomTomAPICommunicator api;
     private JedisPool jedisPool;
 
-    private static final int JEDIS_PORT = 2000;
+    private static final int JEDIS_PORT = 6379;
 
     public CachedTomTomAPICommunicator(TomTomAPICommunicator api) {
         this.api = api;
@@ -45,12 +44,12 @@ public class CachedTomTomAPICommunicator implements TomTomAPICommunicator {
             if (jedis.exists(key)) {
                 img = ImageIO.read(new ByteArrayInputStream(jedis.get(key)));
             }
+            else {
+                img = api.getMapByGrid(x, y, z);
+                jedis.set(key, bufferedImageToByteArray(img));
+            }
         }
 
-        if (img == null) {
-            img = api.getMapByGrid(x, y, z);
-        }
-
-        return null;
+        return img;
     }
 }
