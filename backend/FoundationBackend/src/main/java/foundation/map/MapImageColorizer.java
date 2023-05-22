@@ -1,6 +1,5 @@
 package foundation.map;
 
-import com.j256.ormlite.dao.Dao;
 import com.peertopark.java.geocalc.DegreeCoordinate;
 import com.peertopark.java.geocalc.EarthCalc;
 import com.peertopark.java.geocalc.Point;
@@ -44,14 +43,14 @@ public class MapImageColorizer {
         return presences.stream()
                 .map(p ->
                         MapImageColorizer.distanceDecayFunction(
-                            EarthCalc.getDistance(
-                                    new Point(
-                                            new DegreeCoordinate(p.posId().minY()),
-                                            new DegreeCoordinate(p.posId().minX())),
-                                    new Point(
-                                            new DegreeCoordinate(y),
-                                            new DegreeCoordinate(x)))) *
-                        MapImageColorizer.timeDecayFunction(currTimestamp - p.timestamp()))
+                                EarthCalc.getDistance(
+                                        new Point(
+                                                new DegreeCoordinate(p.posId().minY()),
+                                                new DegreeCoordinate(p.posId().minX())),
+                                        new Point(
+                                                new DegreeCoordinate(y),
+                                                new DegreeCoordinate(x)))) *
+                                MapImageColorizer.timeDecayFunction(currTimestamp - p.timestamp()))
                 .reduce(0.0, Double::sum);
     }
 
