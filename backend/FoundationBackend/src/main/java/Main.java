@@ -13,7 +13,6 @@ import static spark.Spark.*;
 
 public class Main {
     public static void main(String[] args) {
-
         port(6969);
 
         String dbConnectionString = "jdbc:sqlite:../db/db_foundation - Copy.db";
@@ -29,10 +28,12 @@ public class Main {
 
             get("/map", controller::handleMapImage);
 
+            get("/map-tile", controller::handleMapTileImage);
+
         } catch (SQLException e) {
-
+            System.out.println("Unhandled sql exception: " + e.getMessage());
         } catch (Exception e) {
-
+            System.out.println("Unhandled exception: " + e.getMessage());
         }
     }
 }

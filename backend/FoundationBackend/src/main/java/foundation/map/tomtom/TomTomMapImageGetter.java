@@ -13,7 +13,7 @@ public class TomTomMapImageGetter implements MapImageGetter {
         this.api = api;
     }
 
-    public BufferedImage getMapByGrid(Position<Integer> position, int z) throws Exception {
+    public BufferedImage getMapTile(Position<Integer> position, int z) {
         return api.getMapByGrid(position.x(), position.y(), z);
     }
 
@@ -43,7 +43,7 @@ public class TomTomMapImageGetter implements MapImageGetter {
         BufferedImage[][] imgGrid = new BufferedImage[rowSz][colSz];
         for (int i = 0; i < rowSz; i++) {
             for (int j = 0; j < colSz; j++) {
-                imgGrid[i][j] = getMapByGrid(tilePositions[i][j], zoomLevel);
+                imgGrid[i][j] = getMapTile(tilePositions[i][j], zoomLevel);
             }
         }
 
@@ -75,5 +75,10 @@ public class TomTomMapImageGetter implements MapImageGetter {
                 (int) ((boundingBox.maxY() - imgMinY) / (imgMaxY - imgMinY) * img.getHeight());
 
         return img.getSubimage(minPixelX, minPixelY, (maxPixelX - minPixelX + 1), (maxPixelY - minPixelY + 1));
+    }
+
+    @Override
+    public BufferedImage getMapTile(int x, int y, int z) {
+        return getMapTile(new Position<>(x, y), z);
     }
 }

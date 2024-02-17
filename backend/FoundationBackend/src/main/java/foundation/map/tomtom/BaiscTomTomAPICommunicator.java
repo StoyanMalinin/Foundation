@@ -27,13 +27,23 @@ public class BaiscTomTomAPICommunicator implements TomTomAPICommunicator {
         return httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
     }
 
-    public BufferedImage getMapByGrid(int x, int y, int z) throws Exception {
-        HttpResponse response = sendRequest(MapImageAPIQuery.builder().x(x).y(y).z(z).build());
+    public BufferedImage getMapByGrid(int x, int y, int z) {
+        HttpResponse response = null;
+        try {
+            response = sendRequest(MapImageAPIQuery.builder().x(x).y(y).z(z).build());
+        } catch (IOException | InterruptedException e) {
+            return null;
+        }
 
         final int successStatusCode = 200;
 
         if (response.statusCode() == successStatusCode) {
-            BufferedImage image = ImageIO.read(new ByteArrayInputStream((byte[]) response.body()));
+            BufferedImage image = null;
+            try {
+                image = ImageIO.read(new ByteArrayInputStream((byte[]) response.body()));
+            } catch (IOException e) {
+                return null;
+            }
             return image;
         } else {
             System.out.println("fak");

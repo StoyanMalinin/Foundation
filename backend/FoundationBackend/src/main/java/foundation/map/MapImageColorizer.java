@@ -8,18 +8,23 @@ import foundation.database.structure.Presence;
 import foundation.database.structure.Search;
 import foundation.map.tomtom.Position;
 import foundation.map.tomtom.TileGridUtils;
+import observability.PerformanceUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.nio.DoubleBuffer;
+import java.time.Instant;
 import java.util.List;
+import java.util.concurrent.*;
 
 public class MapImageColorizer {
-    private Search search;
     private FoundationDatabaseController dbController;
+    private ExecutorService executorService;
 
-    public MapImageColorizer(FoundationDatabaseController dbController, Search search) {
-        this.search = search;
+
+    public MapImageColorizer(FoundationDatabaseController dbController) {
         this.dbController = dbController;
+        this.executorService = Executors.newFixedThreadPool(20);
     }
 
     private static double distanceDecayFunction(double d) {
@@ -32,7 +37,7 @@ public class MapImageColorizer {
         return 1.0 / (1.0  + k * t);
     }
 
-    private double evalCoef(double x, double y, long currTimestamp) throws Exception {
+    private double evalCoef(double x, double y, long currTimestamp, Search search) throws Exception {
         final double searchSz = 1e4;
 
         BoundingBox boundingBox = TileGridUtils.getBoundingBox(x, y, searchSz);
@@ -66,7 +71,7 @@ public class MapImageColorizer {
     }
 
     public void colorizeImage(BufferedImage img, BoundingBox imgBoundingBox,
-                              int vertRes, int horRes, long currTimestamp) throws Exception {
+                              int vertRes, int horRes, long currTimestamp, Search search) throws Exception {
         final int zoomLevel = 20;
         double[][] tileCoef = new double[vertRes][horRes];
 
@@ -78,24 +83,25 @@ public class MapImageColorizer {
                         + (imgBoundingBox.maxY() - imgBoundingBox.minY()) / vertRes * ((vertRes - i - 1) + 0.5);
                 Position<Double> queryPosition = clipPositionToTileCenter(zoomLevel, posX, posY);
 
-                double coef = evalCoef(queryPosition.x(), queryPosition.y(), currTimestamp);
-                tileCoef[i][j] = coef;
+                tileCoef[i][j] = evalCoef(queryPosition.x(), queryPosition.y(), currTimestamp, search);
             }
         }
 
-        for (int i = 0; i < img.getHeight(); i++) {
-            for (int j = 0; j < img.getWidth(); j++) {
-                int tileRow = i / (img.getHeight() / vertRes + 1);
-                int tileCol = j / (img.getWidth() / horRes + 1);
+        PerformanceUtils.logDuration(() -> {
+            for (int i = 0; i < img.getHeight(); i++) {
+                for (int j = 0; j < img.getWidth(); j++) {
+                    int tileRow = i / (img.getHeight() / vertRes + 1);
+                    int tileCol = j / (img.getWidth() / horRes + 1);
 
-                double coef = tileCoef[tileRow][tileCol];
-                int red = (int) (Math.min(coef, 1) * 255);
+                    double coef = tileCoef[tileRow][tileCol];
+                    int red = (int) (Math.min(coef, 1) * 255);
 
-                Color c = new Color(img.getRGB(j, i));
-                c = new Color(red, c.getBlue() / 2, c.getGreen() / 2);
+                    Color c = new Color(img.getRGB(j, i));
+                    c = new Color((int) (red * 0.4 + c.getRed() * 0.6), (int) (c.getGreen() * 0.6), (int) (c.getBlue() * 0.6));
 
-                img.setRGB(j, i, c.getRGB());
+                    img.setRGB(j, i, c.getRGB());
+                }
             }
-        }
+        }, "filling new pixel values");
     }
 }

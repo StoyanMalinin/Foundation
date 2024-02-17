@@ -23,7 +23,7 @@ public class Sandbox {
 
             BaiscTomTomAPICommunicator tomtomAPI = new BaiscTomTomAPICommunicator();
             MapImageGetter mapImageGetter = new TomTomMapImageGetter(tomtomAPI);
-            MapImageColorizer mapImageColorizer = new MapImageColorizer(dbController, dbController.getSearchById(1));
+            // MapImageColorizer mapImageColorizer = new MapImageColorizer(dbController, dbController.getSearchById(1));
 
             final double sz = 1000;
             final double lat = 41.76795371636188;
@@ -41,10 +41,10 @@ public class Sandbox {
             }
             */
 
-            BufferedImage img = mapImageGetter.getMap(lon, lat, sz);
-            mapImageColorizer.colorizeImage(img, TileGridUtils.getBoundingBox(lon, lat, sz), 10, 10, 5);
+            //BufferedImage img = mapImageGetter.getMap(lon, lat, sz);
+            //mapImageColorizer.colorizeImage(img, TileGridUtils.getBoundingBox(lon, lat, sz), 10, 10, 5);
 
-            ImageIO.write(img, "png", new File("picture.png"));
+            //ImageIO.write(img, "png", new File("picture.png"));
 
         } catch (SQLException e) {
             System.out.println(e.getMessage());

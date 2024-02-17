@@ -36,7 +36,7 @@ public class CachedTomTomAPICommunicator implements TomTomAPICommunicator {
     }
 
     @Override
-    public BufferedImage getMapByGrid(int x, int y, int z) throws Exception {
+    public BufferedImage getMapByGrid(int x, int y, int z) {
         BufferedImage img = null;
         byte[] key = gridQueryToByteArray(x, y, z);
 
@@ -48,6 +48,8 @@ public class CachedTomTomAPICommunicator implements TomTomAPICommunicator {
                 img = api.getMapByGrid(x, y, z);
                 jedis.set(key, bufferedImageToByteArray(img));
             }
+        } catch (IOException e) {
+            return null;
         }
 
         return img;
