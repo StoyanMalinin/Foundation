@@ -65,7 +65,6 @@ public class EndpointController {
             response.status(invalidNumericValueCode);
             return "Bad request - invalid numeric value";
         }
-
         Search search = null;
         try {
             search = dbController.getSearchById(searchId);

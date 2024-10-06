@@ -30,6 +30,7 @@ public class Main {
 
             get("/map-tile", controller::handleMapTileImage);
 
+            System.out.println("Application started");
         } catch (SQLException e) {
             System.out.println("Unhandled sql exception: " + e.getMessage());
         } catch (Exception e) {
