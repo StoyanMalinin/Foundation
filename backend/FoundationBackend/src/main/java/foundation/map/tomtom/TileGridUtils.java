@@ -6,6 +6,8 @@ import com.peertopark.java.geocalc.EarthCalc;
 import com.peertopark.java.geocalc.Point;
 import foundation.map.BoundingBox;
 
+// Most of the methods here are copy-pasta from
+// https://developer.tomtom.com/map-display-api/documentation/zoom-levels-and-tile-grid
 public class TileGridUtils {
     public static double zoomLevelToTileSize(int z) {
         final double originalTileSize = 40075017;

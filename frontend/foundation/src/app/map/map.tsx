@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { boundingBoxToTileGrid } from './map-utils'
 
 type MapProps = {
     lat: [number, number],
@@ -8,33 +9,11 @@ type MapProps = {
 };  
 
 export default function Map(props: MapProps) {
-    const [mapURL, setMapURL] = useState<string>("");
-    const [error, setError] = useState<string | null>(null);
-    const [loading, setLoading] = useState<boolean>(true);
-
-    useEffect(() => {
-        async function f() {
-            setLoading(true);
-
-            try {
-                setMapURL(await getMapRegion(props.lat, props.lon));
-            } catch(e) {
-                setError(JSON.stringify(e));
-            }
-
-            setLoading(false);
-        }
-        
-        f();
-    }, [props]);
-
-    if (error != null) {
-        return <p>Error {error}</p>
-    } else if (loading) {
-        return <p>Loading...</p>
-    }
+    const grid = boundingBoxToTileGrid(props.lat[0], props.lat[1], props.lon[0], props.lon[1]);
     
-    return <img src={mapURL}></img>;
+    return <div style={{gridTemplateColumns: `repeat(${grid[0].length}, 1fr)`, display: "grid"}}>
+        {grid.flat().map((tile, ind) => <div key={ind}>{ind}</div>)}
+        </div>
 }
 
 async function getMapRegion(lat: [number, number], lon: [number, number]): Promise<string> {

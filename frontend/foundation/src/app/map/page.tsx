@@ -19,7 +19,7 @@ export default function MapWrapper() {
     const [mousePosition, setMousePosition] = useState<{x : number | null, y : number | null}>({ x: null, y: null });
     const divRef = useRef(null);
 
-    const [latLon, setLatLon] = useState<LatLon>({lat: [-90, +90], lon: [-90, +90]});
+    const [latLon, setLatLon] = useState<LatLon>({lat: [-80, +80], lon: [-180, +180]});
     const [isMouseUp, setMouseUp] = useState<boolean>(true);
 
     const handleMouseMove = (event: MouseEvent) => {
