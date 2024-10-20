@@ -9,8 +9,6 @@ type MapProps = {
     tile: utils.Tile,
 };  
 
-const tileCache: Record<string, string> = {};
-
 export default function MapTile(props: MapProps) {
     const [tileURL, setTileURL] = useState<string | null>(null);
 

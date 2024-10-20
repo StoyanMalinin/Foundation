@@ -7,7 +7,7 @@ export type Tile = {
 }
 
 export function boundingBoxToTileGrid(lat1: number, lat2: number, lon1: number, lon2: number): Tile[][] {
-    const zoomLevel = 4;
+    const zoomLevel = 3;
     var grid: Tile[][] = [];
     
     var lons;
