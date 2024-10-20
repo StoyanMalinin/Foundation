@@ -46,7 +46,7 @@ public class BaiscTomTomAPICommunicator implements TomTomAPICommunicator {
             }
             return image;
         } else {
-            System.out.println("fak");
+            System.out.println(response.statusCode());
         }
 
         return null;

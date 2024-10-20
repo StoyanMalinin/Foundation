@@ -19,10 +19,10 @@ export default function MapWrapper() {
     const [mousePosition, setMousePosition] = useState<{x : number | null, y : number | null}>({ x: null, y: null });
     const divRef = useRef(null);
 
-    const [latLon, setLatLon] = useState<LatLon>({lat: [-80, +80], lon: [-180, +180]});
+    const [latLon, setLatLon] = useState<LatLon>({lat: [-80, +80], lon: [-170, +170]});
     const [isMouseUp, setMouseUp] = useState<boolean>(true);
 
-    const handleMouseMove = (event: MouseEvent) => {
+    const handleMouseMove = (event: MouseEvent) => {      
         if (isMouseUp) {
           if (mousePosition.x != null) {
             setMousePosition({x: null, y: null});
@@ -70,5 +70,5 @@ export default function MapWrapper() {
         }
       };
 
-    return <div ref={divRef} onMouseMove={handleMouseMove} onMouseDown={() => setMouseUp(false)} onMouseUp={() => setMouseUp(true)} onWheel={handleMouseWheel} className="map-wrapper"><Map lat={latLon.lat} lon={latLon.lon} ></Map></div>
+    return <div ref={divRef} key={"map-wrapper-key"} onMouseMove={handleMouseMove} onMouseDown={() => setMouseUp(false)} onMouseUp={() => setMouseUp(true)} onWheel={handleMouseWheel} className="map-wrapper"><Map lat={latLon.lat} lon={latLon.lon} ></Map></div>
 }
