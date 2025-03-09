@@ -118,18 +118,24 @@ async function fetchMapTile(z: number, x: number, y: number): Promise<HTMLImageE
     
     var url = `http://localhost:6969/map-tile?searchId=${1}&z=${z}&x=${x}&y=${y}`;
 
-    const response = await fetch(url);
-    if (response.status == 200) {
-        const img = new Image();
-        img.src = URL.createObjectURL(await response.blob());
+    try {
+        const response = await fetch(url);
+        if (response.status == 200) {
+            const img = new Image();
+            img.src = URL.createObjectURL(await response.blob());
 
-        const p = new Promise<void>((resolve, reject) => {
-            img.onload = () => resolve();
-        });
-        await p;
-        
-        return img;
-    } else {
-        throw response.statusText;
+            const p = new Promise<void>((resolve, reject) => {
+                img.onload = () => resolve();
+            });
+            await p;
+            
+            return img;
+        } else {
+            throw response.statusText;
+        }
+    } catch (e) {
+        console.error(e);
     }
+
+    return new Image();
 }

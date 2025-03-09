@@ -1,12 +1,12 @@
 // Shamelessly copy-pasted from 
 // https://developer.tomtom.com/map-display-api/documentation/zoom-levels-and-tile-grid
 
-export const MIN_LAT = -85.051128779807
-export const MAX_LAT = 85.051128779806
-export const MIN_LON = -180.0
-export const MAX_LON = 180.0
-export const MIN_ZOOM_LEVEL = 0
-export const MAX_ZOOM_LEVEL = 22
+export const MIN_LAT = -85.051128779807;
+export const MAX_LAT = 85.051128779806;
+export const MIN_LON = -180.0;
+export const MAX_LON = 180.0;
+export const MIN_ZOOM_LEVEL = 0;
+export const MAX_ZOOM_LEVEL = 7; // 22
 
 export function latLonToTileZXY(lat: number, lon: number, zoomLevel: number): [number, number, number] {
     if (
@@ -163,3 +163,4 @@ export function latLonToTileZXY(lat: number, lon: number, zoomLevel: number): [n
   
     return [lat1, lon1, lat2, lon2]
   }
+
