@@ -18,11 +18,10 @@ public class TomTomMapImageGetter implements MapImageGetter {
     }
 
     @Override
-    public BufferedImage getMap(double longitude, double latitude, double sz) throws Exception {
+    public BufferedImage getMap(double longitude, double latitude, double sz) {
         BoundingBox boundingBox = TileGridUtils.getBoundingBox(longitude, latitude, sz);
 
         final int zoomLevel = TileGridUtils.getZoomLevelBySize(sz);
-        final double tileSz = TileGridUtils.zoomLevelToTileSize(zoomLevel);
 
         Position<Integer>[][] tilePositions = new Position[2][2];
         tilePositions[1][0] = TileGridUtils.latLonToTileZXY(boundingBox.minY(), boundingBox.minX(), zoomLevel);

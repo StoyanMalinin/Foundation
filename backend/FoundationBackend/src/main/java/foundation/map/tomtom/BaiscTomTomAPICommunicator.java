@@ -28,12 +28,6 @@ public class BaiscTomTomAPICommunicator implements TomTomAPICommunicator {
     }
 
     public BufferedImage getMapByGrid(int x, int y, int z) {
-        try {
-            Thread.sleep((long)(Math.random() * 30 * 1000));
-        } catch (Exception e) {
-
-        }
-
         HttpResponse response = null;
         try {
             response = sendRequest(MapImageAPIQuery.builder().x(x).y(y).z(z).build());
@@ -52,7 +46,7 @@ public class BaiscTomTomAPICommunicator implements TomTomAPICommunicator {
             }
             return image;
         } else {
-            System.out.println(response.statusCode());
+            System.out.println("Error from TomTom API: " + response.statusCode() + " | " + response.body());
         }
 
         return null;

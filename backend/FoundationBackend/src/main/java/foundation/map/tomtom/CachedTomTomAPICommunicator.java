@@ -45,10 +45,13 @@ public class CachedTomTomAPICommunicator implements TomTomAPICommunicator {
                 img = ImageIO.read(new ByteArrayInputStream(jedis.get(key)));
             }
             else {
+                System.out.println("Cache miss(" + x + "," + y + "," + z + ")");
+
                 img = api.getMapByGrid(x, y, z);
                 jedis.set(key, bufferedImageToByteArray(img));
             }
         } catch (Exception e) {
+            System.out.println("Redis exception: " + e.getMessage());
             img = api.getMapByGrid(x, y, z);
         }
 

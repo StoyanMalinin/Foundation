@@ -4,6 +4,28 @@ export type Tile = {
     z: number, 
     x: number, 
     y: number
+};
+
+export type LatLon = {
+    lat: [number, number],
+    lon: [number, number],
+};
+
+function clipBetween(x: number, l: number, r: number): number {
+    return Math.min(Math.max(x, l), r);
+}
+
+export function recalculateBoundingBox(scale: number, lat: [number, number], lon: [number, number]): LatLon {    
+    const latDelta = lat[1] - lat[0];
+    const lonDelta = lon[1] - lon[0];
+
+    const newLatDelta = clipBetween(latDelta * scale, 0.001, 180);
+    const newLonDelta = clipBetween(lonDelta * scale, 0.001, 360);
+
+    return {
+        lat: [lat[0] + (latDelta - newLatDelta) / 2, lat[1] - (latDelta - newLatDelta) / 2],
+        lon: [lon[0] + (lonDelta - newLonDelta) / 2, lon[1] - (lonDelta - newLonDelta) / 2]
+    }
 }
 
 function boundingBoxAndZoomLevelToGridSize(lat1: number, lat2: number, lon1: number, lon2: number, zoomLevel: number): number {

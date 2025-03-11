@@ -4,8 +4,6 @@ import { useRef } from "react";
 import MapWrapper from "./map-wrapper";
 
 export default function MapPage() {
-    console.log("Render MapPage");
-
     const divRef = useRef<HTMLDivElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
 

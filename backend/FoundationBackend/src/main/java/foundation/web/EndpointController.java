@@ -139,7 +139,6 @@ public class EndpointController {
             return "Internal server error - could not get map image";
         }
 
-        /*
         Search search = null;
         try {
             search = dbController.getSearchById(searchId);
@@ -149,10 +148,10 @@ public class EndpointController {
             response.status(internalLogicError);
             return "Internal logic error " + e.getMessage();
         }
-         */
 
         try {
-//            mapImageColorizer.colorizeImage(img, TileGridUtils.tileZXYToLatLonBBox(z, x, y), 10, 10, 0, search);
+            mapImageColorizer.colorizeImage(img, TileGridUtils.tileZXYToLatLonBBox(z, x, y),
+                    10, 10, 0, search);
             ImageIO.write(img, "png", response.raw().getOutputStream());
         } catch (Exception e) {
             response.status(500);
