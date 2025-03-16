@@ -29,7 +29,9 @@ public class EndpointController {
     }
 
     public boolean handleMapTileImage(Request request, Response response, Callback callback) {
-        response.getHeaders().add("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
+        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+
         Fields queryParams = null;
         try {
             queryParams = Request.getParameters(request);

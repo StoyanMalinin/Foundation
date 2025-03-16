@@ -24,7 +24,7 @@ public class Main {
 
         ServerConnector connector = new ServerConnector(server);
         connector.setPort(6969);
-        server.addConnector(new ServerConnector(server));
+        server.addConnector(connector);
 
         ContextHandlerCollection contextCollection = new ContextHandlerCollection();
 
@@ -40,7 +40,8 @@ public class Main {
                     System.out.println("aide");
 
                     response.setStatus(200);
-                    Content.Sink.write(response, true, "<h>zdr " + Request.getParameters(request).get("name") + "</h>", callback);
+                    response.getHeaders().put("Content-Type", "text/html");
+                    Content.Sink.write(response, true, "<h1>zdr " + Request.getParameters(request).get("name") + "</h1>", callback);
 
                     callback.succeeded();
                     return true;
@@ -54,20 +55,7 @@ public class Main {
                 }
             }, "/map-tile"));
 
-            // server.setHandler(contextCollection);
-
-            server.setHandler(new Handler.Abstract() {
-                @Override
-                public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                    System.out.println("tuka li?");
-
-                    response.setStatus(404);
-                    Content.Sink.write(response, true, "Not found", callback);
-                    callback.succeeded();
-
-                    return true;
-                }
-            });
+            server.setHandler(contextCollection);
 
             server.start();
             System.out.println("Application started");
