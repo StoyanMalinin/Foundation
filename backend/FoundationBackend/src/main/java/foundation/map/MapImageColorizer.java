@@ -37,11 +37,11 @@ public class MapImageColorizer {
         return 1.0 / (1.0  + k * t);
     }
 
-    private double evalCoef(double x, double y, long currTimestamp, Search search) throws Exception {
+    private double evalCoef(double x, double y, long currTimestamp, int searchId) throws Exception {
         final double searchSz = 1e4;
 
         BoundingBox boundingBox = TileGridUtils.getBoundingBox(x, y, searchSz);
-        List<Presence> presences = dbController.getAllPresencesOfSearchInsideBoundingBox(search.id(),
+        List<Presence> presences = dbController.getAllPresencesOfSearchInsideBoundingBox(searchId,
                 boundingBox.minX(), boundingBox.maxX(),
                 boundingBox.minY(), boundingBox.maxY());
 
@@ -71,7 +71,7 @@ public class MapImageColorizer {
     }
 
     public void colorizeImage(BufferedImage img, BoundingBox imgBoundingBox,
-                              int vertRes, int horRes, long currTimestamp, Search search) throws Exception {
+                              int vertRes, int horRes, long currTimestamp, int searchId) throws Exception {
         final int zoomLevel = 20;
         double[][] tileCoef = new double[vertRes][horRes];
 
@@ -84,7 +84,7 @@ public class MapImageColorizer {
                 Position<Double> queryPosition = clipPositionToTileCenter(zoomLevel, posX, posY);
 
                 try {
-                    tileCoef[i][j] = evalCoef(queryPosition.x(), queryPosition.y(), currTimestamp, search);
+                    tileCoef[i][j] = evalCoef(queryPosition.x(), queryPosition.y(), currTimestamp, searchId);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }

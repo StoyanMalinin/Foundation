@@ -72,27 +72,15 @@ public class EndpointController {
             return true;
         }
 
-        Search search = null;
         try {
-            search = dbController.getSearchById(searchId);
-        } catch (SQLException e) {
-            final int internalLogicError = 500;
-
-            response.setStatus(internalLogicError);
-            Content.Sink.write(response, true, "Internal logic error " + e.getMessage(), callback);
-
-            return true;
-        }
-
-        try {
-            Search finalSearch = search;
+            int finalSearchId = searchId;
             int finalZ = z;
             int finalX = x;
             int finalY = y;
             PerformanceUtils.logDuration(() -> {
                 try {
                     mapImageColorizer.colorizeImage(img, TileGridUtils.tileZXYToLatLonBBox(finalZ, finalX, finalY),
-                            10, 10, 0, finalSearch);
+                            10, 10, 0, finalSearchId);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
