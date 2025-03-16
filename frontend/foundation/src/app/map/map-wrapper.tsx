@@ -9,7 +9,7 @@ type MapWrapperProps = {
   canvasRef: React.RefObject<HTMLCanvasElement>,
 }
 
-export default function MapWrapper(props: MapWrapperProps) {  
+export default function MapWrapper(props: MapWrapperProps) {
     // This is only tracked if the mouse is down - saves us from unnecessary re-renders  
     const [mousePosition, setMousePosition] = useState<{x : number | null, y : number | null}>({ x: null, y: null });
 
@@ -74,7 +74,7 @@ export default function MapWrapper(props: MapWrapperProps) {
             const bounding = props.divRef.current.getBoundingClientRect();
             setSize([bounding.width, bounding.height]);
         }
-    }, [props.divRef.current, props.divRef]);
+    }, [props.divRef]);
 
     // If the size is 0 - the div is not rendered yet
     if (size[0] === 0) {

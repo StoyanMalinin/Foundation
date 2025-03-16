@@ -22,7 +22,11 @@ export default function Map(props: MapProps) {
                 const _canvas = props.canvasRef.current;
                 setCanvasCtx(_canvas.getContext("2d"));
             }
-    }, [props.canvasRef, props.canvasRef.current]);
+    }, [props.canvasRef, props.drawHeight, props.drawWidth]);
+
+    if (!canvasCtx) {
+        return <></>;
+    }
 
     const grid = boundingBoxToTileGrid(props.lat[0], props.lat[1], props.lon[0], props.lon[1]);
 
