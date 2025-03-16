@@ -83,25 +83,27 @@ public class MapImageColorizer {
                         + (imgBoundingBox.maxY() - imgBoundingBox.minY()) / vertRes * ((vertRes - i - 1) + 0.5);
                 Position<Double> queryPosition = clipPositionToTileCenter(zoomLevel, posX, posY);
 
-                tileCoef[i][j] = evalCoef(queryPosition.x(), queryPosition.y(), currTimestamp, search);
+                try {
+                    tileCoef[i][j] = evalCoef(queryPosition.x(), queryPosition.y(), currTimestamp, search);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
             }
         }
 
-        PerformanceUtils.logDuration(() -> {
-            for (int i = 0; i < img.getHeight(); i++) {
-                for (int j = 0; j < img.getWidth(); j++) {
-                    int tileRow = i / (img.getHeight() / vertRes + 1);
-                    int tileCol = j / (img.getWidth() / horRes + 1);
+        for (int i = 0; i < img.getHeight(); i++) {
+            for (int j = 0; j < img.getWidth(); j++) {
+                int tileRow = i / (img.getHeight() / vertRes + 1);
+                int tileCol = j / (img.getWidth() / horRes + 1);
 
-                    double coef = tileCoef[tileRow][tileCol];
-                    int red = (int) (Math.min(coef, 1) * 255);
+                double coef = tileCoef[tileRow][tileCol];
+                int red = (int) (Math.min(coef, 1) * 255);
 
-                    Color c = new Color(img.getRGB(j, i));
-                    c = new Color((int) (red * 0.4 + c.getRed() * 0.6), (int) (c.getGreen() * 0.6), (int) (c.getBlue() * 0.6));
+                Color c = new Color(img.getRGB(j, i));
+                c = new Color((int) (red * 0.4 + c.getRed() * 0.6), (int) (c.getGreen() * 0.6), (int) (c.getBlue() * 0.6));
 
-                    img.setRGB(j, i, c.getRGB());
-                }
+                img.setRGB(j, i, c.getRGB());
             }
-        }, "filling new pixel values");
+        }
     }
 }

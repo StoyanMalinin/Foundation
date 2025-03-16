@@ -5,19 +5,16 @@ import foundation.database.structure.Search;
 import foundation.map.MapImageColorizer;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.TileGridUtils;
-import spark.Request;
-import spark.Response;
+import observability.PerformanceUtils;
+import org.eclipse.jetty.io.Content;
+import org.eclipse.jetty.server.Request;
+import org.eclipse.jetty.server.Response;
+import org.eclipse.jetty.util.Fields;
+import org.eclipse.jetty.util.Callback;
 
 import javax.imageio.ImageIO;
-import javax.servlet.ServletOutputStream;
 import java.awt.image.BufferedImage;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.security.URIParameter;
 import java.sql.SQLException;
-import java.sql.SQLOutput;
-import java.time.Duration;
-import java.time.Instant;
 
 public class EndpointController {
 
@@ -31,112 +28,35 @@ public class EndpointController {
         this.mapImageColorizer = new MapImageColorizer(dbController);
     }
 
-    public String handleMapImage(Request request, Response response) {
-
-        response.header("Access-Control-Allow-Origin", "*");
-
-        double sz = 1;
-        double lat = 0;
-        double lon = 0;
-        int searchId = -1;
-
-        if (!request.queryParams().contains("searchId")) {
-            final int invalidNumericValueCode = 402;
-
-            response.status(invalidNumericValueCode);
-            return "Bad request - no searchId parameter found";
-        }
-
+    public boolean handleMapTileImage(Request request, Response response, Callback callback) {
+        response.getHeaders().add("Access-Control-Allow-Origin", "*");
+        Fields queryParams = null;
         try {
-            searchId = Integer.parseInt(request.queryParams("searchId"));
-
-            if (request.queryParams().contains("sz")) {
-                sz = Double.parseDouble(request.queryParams("sz"));
-            }
-            if (request.queryParams().contains("lat")) {
-                lat = Double.parseDouble(request.queryParams("lat"));
-            }
-            if (request.queryParams().contains("lon")) {
-                lon = Double.parseDouble(request.queryParams("lon"));
-            }
-        } catch (NumberFormatException e) {
-            final int invalidNumericValueCode = 401;
-
-            response.status(invalidNumericValueCode);
-            return "Bad request - invalid numeric value";
-        }
-        Search search = null;
-        try {
-            search = dbController.getSearchById(searchId);
-        } catch (SQLException e) {
-            final int internalLogicError = 500;
-
-            response.status(internalLogicError);
-            return "Internal logic error " + e.getMessage();
-        }
-
-        if (search == null) {
-            final int searchNotValidCode = 402;
-
-            response.status(searchNotValidCode);
-            return "Bad request - search not valid";
-        }
-
-        try {
-            final int res = 10;
-            final int currTimestamp = 0;
-
-            Instant start = Instant.now();
-
-            BufferedImage img = mapImageGetter.getMap(lon, lat, sz);
-
-            Instant afterImageGetting = Instant.now();
-            System.out.println("Getting the map image took: " + Duration.between(start, afterImageGetting).toMillis() + "ms");
-
-            mapImageColorizer.colorizeImage(img, TileGridUtils.getBoundingBox(lon, lat, sz),
-                    res, res, currTimestamp, search);
-
-            Instant end = Instant.now();
-            System.out.println("Colorizing the image took: " + Duration.between(afterImageGetting, end).toMillis() + "ms");
-
-            ImageIO.write(img, "png", response.raw().getOutputStream());
+            queryParams = Request.getParameters(request);
         } catch (Exception e) {
-            final int internalLogicError = 500;
-
-            response.status(internalLogicError);
-            return "Internal logic error " + e.getMessage();
+            throw new RuntimeException(e);
         }
-
-        return "Success";
-    }
-
-    public String handleMapTileImage(Request request, Response response) {
-        response.header("Access-Control-Allow-Origin", "*");
 
         int searchId = 0, x = 0, y = 0, z = 0;
         try {
-            searchId = Integer.parseInt(request.queryParams("searchId"));
+            searchId = Integer.parseInt(queryParams.getValue("searchId"));
 
-            if (request.queryParams().contains("x")) {
-                x = Integer.parseInt(request.queryParams("x"));
-            }
-            if (request.queryParams().contains("y")) {
-                y = Integer.parseInt(request.queryParams("y"));
-            }
-            if (request.queryParams().contains("z")) {
-                z = Integer.parseInt(request.queryParams("z"));
-            }
+                x = Integer.parseInt(queryParams.getValue("x"));
+                y = Integer.parseInt(queryParams.getValue("y"));
+                z = Integer.parseInt(queryParams.getValue("z"));
         } catch (NumberFormatException e) {
-            final int invalidNumericValueCode = 401;
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Bad request - invalid numeric value", callback);
 
-            response.status(invalidNumericValueCode);
-            return "Bad request - invalid numeric value";
+            return true;
         }
 
         BufferedImage img = mapImageGetter.getMapTile(x, y, z);
         if (img == null) {
-            response.status(500);
-            return "Internal server error - could not get map image";
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not get map image", callback);
+
+            return true;
         }
 
         Search search = null;
@@ -145,20 +65,37 @@ public class EndpointController {
         } catch (SQLException e) {
             final int internalLogicError = 500;
 
-            response.status(internalLogicError);
-            return "Internal logic error " + e.getMessage();
+            response.setStatus(internalLogicError);
+            Content.Sink.write(response, true, "Internal logic error " + e.getMessage(), callback);
+
+            return true;
         }
 
         try {
-            mapImageColorizer.colorizeImage(img, TileGridUtils.tileZXYToLatLonBBox(z, x, y),
-                    10, 10, 0, search);
-            ImageIO.write(img, "png", response.raw().getOutputStream());
-        } catch (Exception e) {
-            response.status(500);
-            return "Internal server error - could not colorize image";
-        }
+            Search finalSearch = search;
+            int finalZ = z;
+            int finalX = x;
+            int finalY = y;
+            PerformanceUtils.logDuration(() -> {
+                try {
+                    mapImageColorizer.colorizeImage(img, TileGridUtils.tileZXYToLatLonBBox(finalZ, finalX, finalY),
+                            10, 10, 0, finalSearch);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }, "colorize image");
 
-        response.status(200);
-        return "Success";
+            ImageIO.write(img, "png", Content.Sink.asOutputStream(response));
+            callback.succeeded();
+            response.setStatus(200);
+
+            return true;
+
+        } catch (Exception e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not colorize image", callback);
+
+            return true;
+        }
     }
 }

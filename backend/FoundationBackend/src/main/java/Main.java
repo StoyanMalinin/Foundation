@@ -6,30 +6,70 @@ import foundation.map.tomtom.CachedTomTomAPICommunicator;
 import foundation.map.tomtom.TomTomAPICommunicator;
 import foundation.map.tomtom.TomTomMapImageGetter;
 import foundation.web.EndpointController;
+import org.eclipse.jetty.io.Content;
+import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.handler.ContextHandler;
+import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.util.Callback;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import java.sql.SQLException;
 
-import static spark.Spark.*;
-
 public class Main {
     public static void main(String[] args) {
-        port(6969);
+        QueuedThreadPool threadPool = new QueuedThreadPool();
+        threadPool.setName("server");
+
+        Server server = new Server(threadPool);
+
+        ServerConnector connector = new ServerConnector(server);
+        connector.setPort(6969);
+        server.addConnector(new ServerConnector(server));
+
+        ContextHandlerCollection contextCollection = new ContextHandlerCollection();
 
         String dbConnectionString = "jdbc:sqlite:../db/db_foundation - Copy.db";
-        try (FoundationDatabaseController dbController = new SQLiteFoundationDatabaseController(dbConnectionString);) {
-
+        try (FoundationDatabaseController dbController = new SQLiteFoundationDatabaseController(dbConnectionString)) {
             TomTomAPICommunicator tomtomAPI = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator());
             MapImageGetter mapImageGetter = new TomTomMapImageGetter(tomtomAPI);
             EndpointController controller = new EndpointController(mapImageGetter, dbController);
 
-            get("/test", (req, resp) -> {
-                return "<h>zdr " + req.queryMap().get("name") + "</h>";
+            contextCollection.addHandler(new ContextHandler(new Handler.Abstract() {
+                @Override
+                public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                    System.out.println("aide");
+
+                    response.setStatus(200);
+                    Content.Sink.write(response, true, "<h>zdr " + Request.getParameters(request).get("name") + "</h>", callback);
+
+                    callback.succeeded();
+                    return true;
+                }
+            }, "/test"));
+
+            contextCollection.addHandler(new ContextHandler(new Handler.Abstract() {
+                @Override
+                public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                    return controller.handleMapTileImage(request, response, callback);
+                }
+            }, "/map-tile"));
+
+            // server.setHandler(contextCollection);
+
+            server.setHandler(new Handler.Abstract() {
+                @Override
+                public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                    System.out.println("tuka li?");
+
+                    response.setStatus(404);
+                    Content.Sink.write(response, true, "Not found", callback);
+                    callback.succeeded();
+
+                    return true;
+                }
             });
 
-            get("/map", controller::handleMapImage);
-
-            get("/map-tile", controller::handleMapTileImage);
-
+            server.start();
             System.out.println("Application started");
         } catch (SQLException e) {
             System.out.println("Unhandled sql exception: " + e.getMessage());

@@ -90,7 +90,12 @@ async function fetchMapTile(t: Tile): Promise<HTMLImageElement> {
     var url = `http://localhost:6969/map-tile?searchId=${1}&z=${t.z}&x=${t.x}&y=${t.y}`;
 
     try {
+        const timerKey = `fetchMapTile-${Math.random()}`;
+
+        console.time(timerKey);
         const response = await fetch(url);
+        console.timeEnd(timerKey);
+
         if (response.status == 200) {
             const img = new Image();
             img.src = URL.createObjectURL(await response.blob());
