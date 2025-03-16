@@ -6,10 +6,14 @@ import foundation.map.tomtom.CachedTomTomAPICommunicator;
 import foundation.map.tomtom.TomTomAPICommunicator;
 import foundation.map.tomtom.TomTomMapImageGetter;
 import foundation.web.EndpointController;
+import org.eclipse.jetty.http.pathmap.ServletPathSpec;
+import org.eclipse.jetty.http.pathmap.UriTemplatePathSpec;
 import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.ContextHandlerCollection;
+import org.eclipse.jetty.server.handler.CrossOriginHandler;
+import org.eclipse.jetty.server.handler.PathMappingsHandler;
 import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
@@ -26,36 +30,38 @@ public class Main {
         connector.setPort(6969);
         server.addConnector(connector);
 
-        ContextHandlerCollection contextCollection = new ContextHandlerCollection();
-
         String dbConnectionString = "jdbc:sqlite:../db/db_foundation - Copy.db";
         try (FoundationDatabaseController dbController = new SQLiteFoundationDatabaseController(dbConnectionString)) {
             TomTomAPICommunicator tomtomAPI = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator());
             MapImageGetter mapImageGetter = new TomTomMapImageGetter(tomtomAPI);
             EndpointController controller = new EndpointController(mapImageGetter, dbController);
 
-            contextCollection.addHandler(new ContextHandler(new Handler.Abstract() {
-                @Override
-                public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                    System.out.println("aide");
+            PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
 
-                    response.setStatus(200);
-                    response.getHeaders().put("Content-Type", "text/html");
-                    Content.Sink.write(response, true, "<h1>zdr " + Request.getParameters(request).get("name") + "</h1>", callback);
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/test"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            response.setStatus(200);
+                            response.getHeaders().put("Content-Type", "text/html");
+                            Content.Sink.write(response, true, "<h1>zdr " + Request.getParameters(request).get("name") + "</h1>", callback);
 
-                    callback.succeeded();
-                    return true;
-                }
-            }, "/test"));
+                            callback.succeeded();
+                            return true;
+                        }
+                    });
 
-            contextCollection.addHandler(new ContextHandler(new Handler.Abstract() {
-                @Override
-                public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                    return controller.handleMapTileImage(request, response, callback);
-                }
-            }, "/map-tile"));
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/map-tile"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            return controller.handleMapTileImage(request, response, callback);
+                        }
+                    });
 
-            server.setHandler(contextCollection);
+            server.setHandler(pathMappingsHandler);
 
             server.start();
             System.out.println("Application started");

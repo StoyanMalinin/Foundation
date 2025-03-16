@@ -29,7 +29,18 @@ public class EndpointController {
     }
 
     public boolean handleMapTileImage(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
+        if (request.getMethod().equals("OPTIONS")) {
+            response.getHeaders().put("Access-Control-Allow-Origin", "*");
+            response.getHeaders().put("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
+            response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+            response.getHeaders().put("Access-Control-Allow-Credentials", "true");
+
+            response.setStatus(200);
+            callback.succeeded();
+            return true;
+        }
+
+        response.getHeaders().put("Access-Control-Allow-Origin", "*");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
 
         Fields queryParams = null;
