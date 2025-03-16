@@ -6,15 +6,15 @@ import foundation.map.tomtom.CachedTomTomAPICommunicator;
 import foundation.map.tomtom.TomTomAPICommunicator;
 import foundation.map.tomtom.TomTomMapImageGetter;
 import foundation.web.EndpointController;
+import org.eclipse.jetty.alpn.server.ALPNServerConnection;
+import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http.pathmap.ServletPathSpec;
-import org.eclipse.jetty.http.pathmap.UriTemplatePathSpec;
+import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
 import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.*;
-import org.eclipse.jetty.server.handler.ContextHandler;
-import org.eclipse.jetty.server.handler.ContextHandlerCollection;
-import org.eclipse.jetty.server.handler.CrossOriginHandler;
 import org.eclipse.jetty.server.handler.PathMappingsHandler;
 import org.eclipse.jetty.util.Callback;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
 import java.sql.SQLException;
@@ -26,9 +26,23 @@ public class Main {
 
         Server server = new Server(threadPool);
 
-        ServerConnector connector = new ServerConnector(server);
-        connector.setPort(6969);
-        server.addConnector(connector);
+        SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
+        sslContextFactory.setKeyStorePath("../secrets/keystore-dev.jks");
+        sslContextFactory.setKeyStorePassword("123456");
+        sslContextFactory.setEndpointIdentificationAlgorithm(null);
+        sslContextFactory.setSniRequired(false);
+
+        HttpConfiguration httpsConfig = new HttpConfiguration();
+        httpsConfig.setSecureScheme("https");
+        httpsConfig.setSecurePort(6969);
+
+        ALPNServerConnectionFactory alpn = new ALPNServerConnectionFactory();
+        HTTP2ServerConnectionFactory http2 = new HTTP2ServerConnectionFactory(httpsConfig);
+        SslConnectionFactory ssl = new SslConnectionFactory(sslContextFactory, alpn.getProtocol());
+
+        ServerConnector httpsConnector = new ServerConnector(server, ssl, alpn, http2, new HttpConnectionFactory(httpsConfig));
+        httpsConnector.setPort(6969);
+        server.addConnector(httpsConnector);
 
         String dbConnectionString = "jdbc:sqlite:../db/db_foundation - Copy.db";
         try (FoundationDatabaseController dbController = new SQLiteFoundationDatabaseController(dbConnectionString)) {
@@ -43,6 +57,8 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            System.out.println("are bate");
+
                             response.setStatus(200);
                             response.getHeaders().put("Content-Type", "text/html");
                             Content.Sink.write(response, true, "<h1>zdr " + Request.getParameters(request).get("name") + "</h1>", callback);

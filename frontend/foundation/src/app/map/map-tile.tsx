@@ -87,7 +87,7 @@ async function fetchMapTile(t: Tile): Promise<HTMLImageElement> {
         return tileCache[`${t.z},${t.x},${t.y}`];
     }
     
-    var url = `http://localhost:6969/map-tile?searchId=${1}&z=${t.z}&x=${t.x}&y=${t.y}`;
+    var url = `https://localhost:6969/map-tile?searchId=${1}&z=${t.z}&x=${t.x}&y=${t.y}`;
 
     try {
         const timerKey = `fetchMapTile-${Math.random()}`;
