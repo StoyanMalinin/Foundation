@@ -63,9 +63,7 @@ public class EndpointController {
 
             return true;
         }
-
-        System.out.println("Query for tile " + x + " " + y + " " + z);
-
+        
         BufferedImage img = mapImageGetter.getMapTile(x, y, z);
         if (img == null) {
             response.setStatus(500);

@@ -23,7 +23,7 @@ public class MapImageColorizer {
     }
 
     private static double distanceDecayFunction(double d) {
-        final double k = 0.01;
+        final double k = 0.03;
         return 1.0 / (1.0  + k * d);
     }
 
@@ -36,7 +36,7 @@ public class MapImageColorizer {
     // so that both coefficients are taken into account.
     // weightA + weightB = 1
     private static double coefCombiner(double a, double b, double weightA, double weightB) {
-        return a * a * weightA + b * b * weightB;
+        return Math.pow(Math.pow(a, weightA) * Math.pow(b, weightB), 1.0 / (weightA + weightB));
     }
 
     // this is an attempt to apply a coefficient to a value, so that the value goes to up when the coefficient goes up
