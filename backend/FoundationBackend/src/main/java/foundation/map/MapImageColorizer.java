@@ -23,7 +23,7 @@ public class MapImageColorizer {
     }
 
     private static double distanceDecayFunction(double d) {
-        final double k = 1;
+        final double k = 0.01;
         return 1.0 / (1.0  + k * d);
     }
 
@@ -32,15 +32,42 @@ public class MapImageColorizer {
         return 1.0 / (1.0  + k * t);
     }
 
+    // this is an attempt to produce a coefficient [0, 1] from to [0, 1] coefficients,
+    // so that both coefficients are taken into account.
+    // weightA + weightB = 1
+    private static double coefCombiner(double a, double b, double weightA, double weightB) {
+        return a * a * weightA + b * b * weightB;
+    }
+
+    // this is an attempt to apply a coefficient to a value, so that the value goes to up when the coefficient goes up
+    // both are between [0, 1]
+    private static double coefApplier(double x, double goalX, double coef) {
+        double delta = goalX - x;
+        return x + delta * coef;
+    }
+
+    private static double sigmoid(double x) {
+        return 1.0 / (1.0 + Math.exp(-x));
+    }
+
     private double evalCoef(List<Presence> presences, long currTimestamp, double x, double y) {
-        return presences.stream()
-                .map(p ->
-                        MapImageColorizer.distanceDecayFunction(
-                                EarthCalc.getDistance(
-                                        new Point(new DegreeCoordinate(p.posId().minY()), new DegreeCoordinate(p.posId().minX())),
-                                        new Point(new DegreeCoordinate(y), new DegreeCoordinate(x)))) *
-                                MapImageColorizer.timeDecayFunction(currTimestamp - p.timestamp()))
-                .reduce(0.0, Double::sum);
+        double presenceWeightCoef = 0.02;
+        double sumCoef = presences.stream()
+                        .map(p ->
+                                coefCombiner(
+                                    MapImageColorizer.distanceDecayFunction(
+                                            EarthCalc.getDistance(
+                                                    new Point(new DegreeCoordinate(p.posId().minY()), new DegreeCoordinate(p.posId().minX())),
+                                                    new Point(new DegreeCoordinate(y), new DegreeCoordinate(x))
+                                            )
+                                    ),
+                                    MapImageColorizer.timeDecayFunction(currTimestamp - p.timestamp()),
+                            0.99, 0.01
+                                )
+                        )
+                        .reduce(0.0, Double::sum);
+
+        return (sigmoid(sumCoef * presenceWeightCoef) - 0.5) * 2; // sumCoef is only positive
     }
 
     public void colorizeImage(BufferedImage img, BoundingBox imgBoundingBox,
@@ -67,10 +94,12 @@ public class MapImageColorizer {
                 int tileCol = j / (img.getWidth() / horRes + 1);
 
                 double coef = tileCoef[tileRow][tileCol];
-                int red = (int) (Math.min(coef, 1) * 255);
 
                 Color c = new Color(img.getRGB(j, i));
-                c = new Color((int) (red * 0.4 + c.getRed() * 0.6), c.getGreen(), c.getBlue());
+                c = new Color(
+                        (int) (coefApplier(c.getRed() / 256.0, 1, coef) * 255),
+                        (int) (coefApplier(c.getGreen() / 256.0, 0, coef) * 255),
+                        (int) (coefApplier(c.getBlue() / 256.0, 0, coef) * 255));
 
                 img.setRGB(j, i, c.getRGB());
             }
