@@ -15,16 +15,17 @@ function clipBetween(x: number, l: number, r: number): number {
     return Math.min(Math.max(x, l), r);
 }
 
-export function recalculateBoundingBox(scale: number, lat: [number, number], lon: [number, number]): LatLon {    
+// focus is where to zoom in/out on. focus is in [0, 1] x [0, 1]
+export function recalculateBoundingBox(scale: number, lat: [number, number], lon: [number, number], focus: [number, number]): LatLon {    
     const latDelta = lat[1] - lat[0];
     const lonDelta = lon[1] - lon[0];
-
+    
     const newLatDelta = clipBetween(latDelta * scale, 0.001, 180);
     const newLonDelta = clipBetween(lonDelta * scale, 0.001, 360);
 
     return {
-        lat: [lat[0] + (latDelta - newLatDelta) / 2, lat[1] - (latDelta - newLatDelta) / 2],
-        lon: [lon[0] + (lonDelta - newLonDelta) / 2, lon[1] - (lonDelta - newLonDelta) / 2]
+        lat: [lat[0] + (latDelta - newLatDelta) * (1 - focus[1]), lat[1] - (latDelta - newLatDelta) * focus[1]],
+        lon: [lon[0] + (lonDelta - newLonDelta) * focus[0], lon[1] - (lonDelta - newLonDelta) * (1 - focus[0])]
     }
 }
 

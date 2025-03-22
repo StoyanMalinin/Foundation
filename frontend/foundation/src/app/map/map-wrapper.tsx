@@ -13,9 +13,10 @@ export default function MapWrapper(props: MapWrapperProps) {
     // This is only tracked if the mouse is down - saves us from unnecessary re-renders  
     const [mousePosition, setMousePosition] = useState<{x : number | null, y : number | null}>({ x: null, y: null });
 
-    const [latLon, setLatLon] = useState<LatLon>({lat: [-80, +80], lon: [-170, +170]});
+    const [latLon, setLatLon] = useState<LatLon>({lat: [-60, +60], lon: [-140, +140]});
     const [isMouseUp, setMouseUp] = useState<boolean>(true);
     const [size, setSize] = useState<[number, number]>([0, 0]); // [width, height]
+    const [bounding, setBounding] = useState<[number, number, number, number]>([0, 0, 0, 0]); // [l, r, d, u]
 
     const handleMouseMove = (event: MouseEvent) => {   
         if (isMouseUp) {
@@ -56,8 +57,13 @@ export default function MapWrapper(props: MapWrapperProps) {
 
     const handleMouseWheel = (event: WheelEvent) => {
         if (Math.abs(event.deltaY) > 1) {
-            const scale = Math.exp(event.deltaY / 5000.0);
-            setLatLon(latLon => recalculateBoundingBox(scale, latLon.lat, latLon.lon));
+            const scale = Math.exp(event.deltaY / 1000.0);
+
+            const focusX = (event.clientX - bounding[0]) / size[0];
+            const focusY = (event.clientY - bounding[3]) / size[1];
+            const focus: [number, number] = [focusX, focusY];
+
+            setLatLon(latLon => recalculateBoundingBox(scale, latLon.lat, latLon.lon, focus));
         }
     };
 
@@ -72,6 +78,9 @@ export default function MapWrapper(props: MapWrapperProps) {
     useEffect(() => {
         if (props.divRef.current) {
             const bounding = props.divRef.current.getBoundingClientRect();
+
+            // TODO: make this atomic
+            setBounding([bounding.left, bounding.right, bounding.bottom, bounding.top]);
             setSize([bounding.width, bounding.height]);
         }
     }, [props.divRef]);
@@ -84,7 +93,7 @@ export default function MapWrapper(props: MapWrapperProps) {
     return <>
         <Map lat={latLon.lat} lon={latLon.lon} drawWidth={size[0]} drawHeight={size[1]} canvasRef={props.canvasRef} />
         <button onClick={() => setLatLon({lat: [-80, +80], lon: [-170, +170]})}>Reset</button>
-        <button onClick={() => setLatLon(recalculateBoundingBox(2, latLon.lat, latLon.lon))}>-</button>
-        <button onClick={() => setLatLon(recalculateBoundingBox(0.5, latLon.lat, latLon.lon))}>+</button>
+        <button onClick={() => setLatLon(recalculateBoundingBox(2, latLon.lat, latLon.lon, [0.5, 0.5]))}>-</button>
+        <button onClick={() => setLatLon(recalculateBoundingBox(0.5, latLon.lat, latLon.lon, [0.5, 0.5]))}>+</button>
     </>;
 }
