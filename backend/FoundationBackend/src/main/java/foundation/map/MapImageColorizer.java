@@ -14,12 +14,10 @@ import java.util.concurrent.*;
 
 public class MapImageColorizer {
     private FoundationDatabaseController dbController;
-    private ExecutorService executorService;
 
 
     public MapImageColorizer(FoundationDatabaseController dbController) {
         this.dbController = dbController;
-        this.executorService = Executors.newFixedThreadPool(20);
     }
 
     private static double distanceDecayFunction(double d) {
@@ -34,7 +32,6 @@ public class MapImageColorizer {
 
     // this is an attempt to produce a coefficient [0, 1] from to [0, 1] coefficients,
     // so that both coefficients are taken into account.
-    // weightA + weightB = 1
     private static double coefCombiner(double a, double b, double weightA, double weightB) {
         return Math.pow(Math.pow(a, weightA) * Math.pow(b, weightB), 1.0 / (weightA + weightB));
     }
@@ -51,7 +48,7 @@ public class MapImageColorizer {
     }
 
     private double evalCoef(List<Presence> presences, long currTimestamp, double x, double y) {
-        double presenceWeightCoef = 0.02;
+        final double presenceWeightCoef = 0.02;
         double sumCoef = presences.stream()
                         .map(p ->
                                 coefCombiner(
@@ -73,8 +70,8 @@ public class MapImageColorizer {
     public void colorizeImage(BufferedImage img, BoundingBox imgBoundingBox,
                               int vertRes, int horRes, long currTimestamp, int searchId) throws Exception {
         double[][] tileCoef = new double[vertRes][horRes];
-        double horizontalQueryBuffer = 0.5;
-        double verticalQueryBuffer = 0.5;
+        final double horizontalQueryBuffer = 0.1;
+        final double verticalQueryBuffer = 0.1;
 
         List<Presence> presences = dbController.getAllPresencesOfSearchInsideBoundingBox(searchId,
                 imgBoundingBox.minX() - horizontalQueryBuffer, imgBoundingBox.maxX() + horizontalQueryBuffer,

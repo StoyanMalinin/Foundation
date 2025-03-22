@@ -75,8 +75,10 @@ async function fetchMapTile(t: Tile): Promise<HTMLImageElement> {
         return tileCache[key];
     }
     
+    console.time(`fetchMapTile ${key}`);
     var url = `https://localhost:6969/map-tile?searchId=${1}&z=${t.z}&x=${t.x}&y=${t.y}`;
     tileCache[key] = fetch(url).then(response => {
+        console.timeEnd(`fetchMapTile ${key}`);
         if (response.status == 200) {
             return response.blob();
         } else {
