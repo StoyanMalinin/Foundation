@@ -12,6 +12,8 @@ type MapTileProps = {
     lon: [number, number],
     drawWidth: number,
     drawHeight: number,
+
+    drawWidthOffset: number,
 }
 
 export default function MapTile(props: MapTileProps) {
@@ -57,7 +59,7 @@ export default function MapTile(props: MapTileProps) {
     const dHeight = dHeightFraction * props.drawHeight;
     
     if (image != null) {
-        props.canvasCtx.drawImage(image, sx, sy, sWidth, sHeight, dx, dy, dWidth, dHeight);
+        props.canvasCtx.drawImage(image, sx, sy, sWidth, sHeight, dx + props.drawWidthOffset, dy, dWidth, dHeight);
     } else {
         props.canvasCtx.fillStyle = "white";
         props.canvasCtx.fillRect(dx, dy, dWidth, dHeight);

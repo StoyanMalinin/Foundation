@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Map from "./map"
-import { recalculateBoundingBox, LatLon } from "./map-utils"
+import { LatLon, recalculateAndNormalizeBoundingBox, normalizeBoundingBox } from "./map-utils"
 
 type MapWrapperProps = {
   divRef: React.RefObject<HTMLDivElement>,
@@ -45,10 +45,10 @@ export default function MapWrapper(props: MapWrapperProps) {
                 newLon[0] = latLon.lon[0] - (offsetX / width) * (latLon.lon[1] - latLon.lon[0]);
                 newLon[1] = latLon.lon[1] - (offsetX / width) * (latLon.lon[1] - latLon.lon[0]);
                 
-                return {
+                return normalizeBoundingBox({
                     lat: newLat,
                     lon: newLon
-                }
+                })
             });
         } else { // just set the initial mouse position
             setMousePosition({x: event.clientX, y: event.clientY});
@@ -63,7 +63,7 @@ export default function MapWrapper(props: MapWrapperProps) {
             const focusY = (event.clientY - bounding[3]) / size[1];
             const focus: [number, number] = [focusX, focusY];
 
-            setLatLon(latLon => recalculateBoundingBox(scale, latLon.lat, latLon.lon, focus));
+            setLatLon(latLon => recalculateAndNormalizeBoundingBox(scale, latLon.lat, latLon.lon, focus));
         }
     };
 
@@ -93,7 +93,7 @@ export default function MapWrapper(props: MapWrapperProps) {
     return <>
         <Map lat={latLon.lat} lon={latLon.lon} drawWidth={size[0]} drawHeight={size[1]} canvasRef={props.canvasRef} />
         <button onClick={() => setLatLon({lat: [-80, +80], lon: [-170, +170]})}>Reset</button>
-        <button onClick={() => setLatLon(recalculateBoundingBox(2, latLon.lat, latLon.lon, [0.5, 0.5]))}>-</button>
-        <button onClick={() => setLatLon(recalculateBoundingBox(0.5, latLon.lat, latLon.lon, [0.5, 0.5]))}>+</button>
+        <button onClick={() => setLatLon(recalculateAndNormalizeBoundingBox(2, latLon.lat, latLon.lon, [0.5, 0.5]))}>-</button>
+        <button onClick={() => setLatLon(recalculateAndNormalizeBoundingBox(0.5, latLon.lat, latLon.lon, [0.5, 0.5]))}>+</button>
     </>;
 }
