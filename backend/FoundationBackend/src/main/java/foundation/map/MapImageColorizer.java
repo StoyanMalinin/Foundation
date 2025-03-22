@@ -5,15 +5,10 @@ import com.peertopark.java.geocalc.EarthCalc;
 import com.peertopark.java.geocalc.Point;
 import foundation.database.FoundationDatabaseController;
 import foundation.database.structure.Presence;
-import foundation.database.structure.Search;
-import foundation.map.tomtom.Position;
-import foundation.map.tomtom.TileGridUtils;
-import observability.PerformanceUtils;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.nio.DoubleBuffer;
-import java.time.Instant;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
 
@@ -37,57 +32,32 @@ public class MapImageColorizer {
         return 1.0 / (1.0  + k * t);
     }
 
-    private double evalCoef(double x, double y, long currTimestamp, int searchId) throws Exception {
-        final double searchSz = 1e4;
-
-        BoundingBox boundingBox = TileGridUtils.getBoundingBox(x, y, searchSz);
-        List<Presence> presences = dbController.getAllPresencesOfSearchInsideBoundingBox(searchId,
-                boundingBox.minX(), boundingBox.maxX(),
-                boundingBox.minY(), boundingBox.maxY());
-
+    private double evalCoef(List<Presence> presences, long currTimestamp, double x, double y) {
         return presences.stream()
                 .map(p ->
                         MapImageColorizer.distanceDecayFunction(
                                 EarthCalc.getDistance(
-                                        new Point(
-                                                new DegreeCoordinate(p.posId().minY()),
-                                                new DegreeCoordinate(p.posId().minX())),
-                                        new Point(
-                                                new DegreeCoordinate(y),
-                                                new DegreeCoordinate(x)))) *
+                                        new Point(new DegreeCoordinate(p.posId().minY()), new DegreeCoordinate(p.posId().minX())),
+                                        new Point(new DegreeCoordinate(y), new DegreeCoordinate(x)))) *
                                 MapImageColorizer.timeDecayFunction(currTimestamp - p.timestamp()))
                 .reduce(0.0, Double::sum);
     }
 
-    private static Position<Double> clipPositionToTileCenter(int zoomLevel, double x, double y) {
-        Position<Integer> tilePosition = TileGridUtils.latLonToTileZXY(y, x, zoomLevel);
-        BoundingBox tileBoundingBox = TileGridUtils.tileZXYToLatLonBBox(zoomLevel,
-                tilePosition.x(), tilePosition.y());
-
-        double queryPosX = (tileBoundingBox.minX() + tileBoundingBox.maxX()) / 2;
-        double queryPosY = (tileBoundingBox.minY() + tileBoundingBox.maxY()) / 2;
-
-        return new Position(queryPosX, queryPosY);
-    }
-
     public void colorizeImage(BufferedImage img, BoundingBox imgBoundingBox,
                               int vertRes, int horRes, long currTimestamp, int searchId) throws Exception {
-        final int zoomLevel = 20;
         double[][] tileCoef = new double[vertRes][horRes];
+        double horizontalQueryBuffer = 0.5;
+        double verticalQueryBuffer = 0.5;
+
+        List<Presence> presences = dbController.getAllPresencesOfSearchInsideBoundingBox(searchId,
+                imgBoundingBox.minX() - horizontalQueryBuffer, imgBoundingBox.maxX() + horizontalQueryBuffer,
+                imgBoundingBox.minY() - verticalQueryBuffer, imgBoundingBox.maxY() + verticalQueryBuffer);
 
         for (int i = 0; i < vertRes; i++) {
             for (int j = 0; j < horRes; j++) {
-                double posX = imgBoundingBox.minX()
-                        + (imgBoundingBox.maxX() - imgBoundingBox.minX()) / horRes * (j + 0.5);
-                double posY = imgBoundingBox.minY()
-                        + (imgBoundingBox.maxY() - imgBoundingBox.minY()) / vertRes * ((vertRes - i - 1) + 0.5);
-                Position<Double> queryPosition = clipPositionToTileCenter(zoomLevel, posX, posY);
-
-                try {
-                    tileCoef[i][j] = evalCoef(queryPosition.x(), queryPosition.y(), currTimestamp, searchId);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+                double x = (j + 0.5) * (imgBoundingBox.maxX() - imgBoundingBox.minX()) / horRes + imgBoundingBox.minX();
+                double y = ((vertRes - i - 1) + 0.5) * (imgBoundingBox.maxY() - imgBoundingBox.minY()) / vertRes + imgBoundingBox.minY();
+                tileCoef[i][j] = evalCoef(presences, currTimestamp, x, y);
             }
         }
 
@@ -100,7 +70,7 @@ public class MapImageColorizer {
                 int red = (int) (Math.min(coef, 1) * 255);
 
                 Color c = new Color(img.getRGB(j, i));
-                c = new Color((int) (red * 0.4 + c.getRed() * 0.6), (int) (c.getGreen() * 0.6), (int) (c.getBlue() * 0.6));
+                c = new Color((int) (red * 0.4 + c.getRed() * 0.6), c.getGreen(), c.getBlue());
 
                 img.setRGB(j, i, c.getRGB());
             }
