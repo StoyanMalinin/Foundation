@@ -1,12 +1,11 @@
 import foundation.database.FoundationDatabaseController;
-import foundation.database.SQLiteFoundationDatabaseController;
+import foundation.database.PostgresFoundationDatabaseController;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.BaiscTomTomAPICommunicator;
 import foundation.map.tomtom.CachedTomTomAPICommunicator;
 import foundation.map.tomtom.TomTomAPICommunicator;
 import foundation.map.tomtom.TomTomMapImageGetter;
 import foundation.web.EndpointController;
-import org.eclipse.jetty.alpn.server.ALPNServerConnection;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http.pathmap.ServletPathSpec;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
@@ -17,6 +16,8 @@ import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Main {
@@ -44,8 +45,11 @@ public class Main {
         httpsConnector.setPort(6969);
         server.addConnector(httpsConnector);
 
-        String dbConnectionString = "jdbc:sqlite:../db/db_foundation - Copy.db";
-        try (FoundationDatabaseController dbController = new SQLiteFoundationDatabaseController(dbConnectionString)) {
+        String dbConnectionString = "jdbc:postgresql://127.0.0.1:5432/foundation";
+        try {
+            Connection dbConnection = DriverManager.getConnection(dbConnectionString, "postgres", "postgres");
+
+            FoundationDatabaseController dbController = new PostgresFoundationDatabaseController(dbConnection);
             TomTomAPICommunicator tomtomAPI = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator());
             MapImageGetter mapImageGetter = new TomTomMapImageGetter(tomtomAPI);
             EndpointController controller = new EndpointController(mapImageGetter, dbController);

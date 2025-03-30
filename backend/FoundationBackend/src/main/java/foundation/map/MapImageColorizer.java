@@ -8,6 +8,7 @@ import foundation.database.structure.Presence;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;
+import java.time.Instant;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.*;
@@ -54,7 +55,7 @@ public class MapImageColorizer {
                                 coefCombiner(
                                     MapImageColorizer.distanceDecayFunction(
                                             EarthCalc.getDistance(
-                                                    new Point(new DegreeCoordinate(p.posId().minY()), new DegreeCoordinate(p.posId().minX())),
+                                                    new Point(new DegreeCoordinate(p.y()), new DegreeCoordinate(p.x())),
                                                     new Point(new DegreeCoordinate(y), new DegreeCoordinate(x))
                                             )
                                     ),
@@ -73,9 +74,12 @@ public class MapImageColorizer {
         final double horizontalQueryBuffer = 0.1;
         final double verticalQueryBuffer = 0.1;
 
+        Instant startTime = Instant.now();
         List<Presence> presences = dbController.getAllPresencesOfSearchInsideBoundingBox(searchId,
                 imgBoundingBox.minX() - horizontalQueryBuffer, imgBoundingBox.maxX() + horizontalQueryBuffer,
                 imgBoundingBox.minY() - verticalQueryBuffer, imgBoundingBox.maxY() + verticalQueryBuffer);
+        Instant endTime = Instant.now();
+        System.out.println("DB time: " + (endTime.toEpochMilli() - startTime.toEpochMilli()) + "ms");
 
         for (int i = 0; i < vertRes; i++) {
             for (int j = 0; j < horRes; j++) {

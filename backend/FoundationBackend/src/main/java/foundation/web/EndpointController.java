@@ -1,7 +1,6 @@
 package foundation.web;
 
 import foundation.database.FoundationDatabaseController;
-import foundation.database.structure.Search;
 import foundation.map.MapImageColorizer;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.TileGridUtils;
@@ -14,7 +13,6 @@ import org.eclipse.jetty.util.Callback;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
-import java.sql.SQLException;
 
 public class EndpointController {
 
@@ -94,7 +92,7 @@ public class EndpointController {
 
         } catch (Exception e) {
             response.setStatus(500);
-            Content.Sink.write(response, true, "Internal server error - could not colorize image", callback);
+            Content.Sink.write(response, true, "Internal server error - could not colorize image" + e.getMessage(), callback);
 
             return true;
         }
