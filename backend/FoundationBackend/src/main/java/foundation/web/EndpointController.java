@@ -15,13 +15,11 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 public class EndpointController {
-    private FoundationDatabaseController dbController;
     private MapImageGetter mapImageGetter;
     private MapImageColorizer mapImageColorizer;
 
     public EndpointController(MapImageGetter mapImageGetter, FoundationDatabaseController dbController) {
         this.mapImageGetter = mapImageGetter;
-        this.dbController = dbController;
         this.mapImageColorizer = new MapImageColorizer(dbController);
     }
 
