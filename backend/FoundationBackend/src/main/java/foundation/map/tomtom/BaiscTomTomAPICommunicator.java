@@ -1,5 +1,7 @@
 package foundation.map.tomtom;
 
+import foundation.map.MapImageGetter;
+
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
@@ -9,7 +11,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
-public class BaiscTomTomAPICommunicator implements TomTomAPICommunicator {
+public class BaiscTomTomAPICommunicator implements MapImageGetter {
     private static final String API_KEY = "pGjCPMXkBdcms0zeNqcy7VHQGmoqnUC4";
 
     private HttpClient httpClient;
@@ -27,7 +29,8 @@ public class BaiscTomTomAPICommunicator implements TomTomAPICommunicator {
         return httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());
     }
 
-    public BufferedImage getMapByGrid(int x, int y, int z) {
+    @Override
+    public BufferedImage getMapTile(int x, int y, int z) {
         HttpResponse response = null;
         try {
             response = sendRequest(MapImageAPIQuery.builder().x(x).y(y).z(z).build());
@@ -35,9 +38,7 @@ public class BaiscTomTomAPICommunicator implements TomTomAPICommunicator {
             return null;
         }
 
-        final int successStatusCode = 200;
-
-        if (response.statusCode() == successStatusCode) {
+        if (response.statusCode() == 200) {
             BufferedImage image = null;
             try {
                 image = ImageIO.read(new ByteArrayInputStream((byte[]) response.body()));

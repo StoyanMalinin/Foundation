@@ -3,8 +3,6 @@ import foundation.database.PostgresFoundationDatabaseController;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.BaiscTomTomAPICommunicator;
 import foundation.map.tomtom.CachedTomTomAPICommunicator;
-import foundation.map.tomtom.TomTomAPICommunicator;
-import foundation.map.tomtom.TomTomMapImageGetter;
 import foundation.web.EndpointController;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http.pathmap.ServletPathSpec;
@@ -50,8 +48,7 @@ public class Main {
             Connection dbConnection = DriverManager.getConnection(dbConnectionString, "postgres", "postgres");
 
             FoundationDatabaseController dbController = new PostgresFoundationDatabaseController(dbConnection);
-            TomTomAPICommunicator tomtomAPI = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator());
-            MapImageGetter mapImageGetter = new TomTomMapImageGetter(tomtomAPI);
+            MapImageGetter mapImageGetter = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator());
             EndpointController controller = new EndpointController(mapImageGetter, dbController);
 
             PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();

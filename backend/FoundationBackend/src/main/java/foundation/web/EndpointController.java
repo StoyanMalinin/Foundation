@@ -15,7 +15,6 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 
 public class EndpointController {
-
     private FoundationDatabaseController dbController;
     private MapImageGetter mapImageGetter;
     private MapImageColorizer mapImageColorizer;

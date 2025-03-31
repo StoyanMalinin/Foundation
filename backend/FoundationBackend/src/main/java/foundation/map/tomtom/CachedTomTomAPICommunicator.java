@@ -1,5 +1,6 @@
 package foundation.map.tomtom;
 
+import foundation.map.MapImageGetter;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 
@@ -9,13 +10,13 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-public class CachedTomTomAPICommunicator implements TomTomAPICommunicator {
-    private TomTomAPICommunicator api;
+public class CachedTomTomAPICommunicator implements MapImageGetter {
+    private MapImageGetter api;
     private JedisPool jedisPool;
 
     private static final int JEDIS_PORT = 6379;
 
-    public CachedTomTomAPICommunicator(TomTomAPICommunicator api) {
+    public CachedTomTomAPICommunicator(MapImageGetter api) {
         this.api = api;
         this.jedisPool = new JedisPool("localhost", JEDIS_PORT);
     }
@@ -36,7 +37,7 @@ public class CachedTomTomAPICommunicator implements TomTomAPICommunicator {
     }
 
     @Override
-    public BufferedImage getMapByGrid(int x, int y, int z) {
+    public BufferedImage getMapTile(int x, int y, int z) {
         BufferedImage img = null;
         byte[] key = gridQueryToByteArray(x, y, z);
 
@@ -47,12 +48,12 @@ public class CachedTomTomAPICommunicator implements TomTomAPICommunicator {
             else {
                 System.out.println("Cache miss(" + x + "," + y + "," + z + ")");
 
-                img = api.getMapByGrid(x, y, z);
+                img = api.getMapTile(x, y, z);
                 jedis.set(key, bufferedImageToByteArray(img));
             }
         } catch (Exception e) {
             System.out.println("Redis exception: " + e.getMessage());
-            img = api.getMapByGrid(x, y, z);
+            img = api.getMapTile(x, y, z);
         }
 
         return img;

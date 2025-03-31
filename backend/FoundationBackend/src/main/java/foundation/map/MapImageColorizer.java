@@ -15,8 +15,7 @@ import java.util.concurrent.*;
 
 public class MapImageColorizer {
     private FoundationDatabaseController dbController;
-
-
+    
     public MapImageColorizer(FoundationDatabaseController dbController) {
         this.dbController = dbController;
     }
