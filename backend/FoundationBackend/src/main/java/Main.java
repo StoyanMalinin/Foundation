@@ -1,3 +1,5 @@
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import foundation.database.FoundationDatabaseController;
 import foundation.database.PostgresFoundationDatabaseController;
 import foundation.map.MapImageGetter;
@@ -13,9 +15,6 @@ import org.eclipse.jetty.server.handler.PathMappingsHandler;
 import org.eclipse.jetty.util.Callback;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.SQLException;
 
 public class Main {
@@ -43,11 +42,18 @@ public class Main {
         httpsConnector.setPort(6969);
         server.addConnector(httpsConnector);
 
-        String dbConnectionString = "jdbc:postgresql://127.0.0.1:5432/foundation";
-        try {
-            Connection dbConnection = DriverManager.getConnection(dbConnectionString, "postgres", "postgres");
+        HikariConfig config = new HikariConfig();
+        config.setJdbcUrl("jdbc:postgresql://127.0.0.1:5432/foundation");
+        config.setUsername("postgres");
+        config.setPassword("postgres");
+        config.addDataSourceProperty("cachePrepStmts", "true");
+        config.addDataSourceProperty("prepStmtCacheSize", "250");
+        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-            FoundationDatabaseController dbController = new PostgresFoundationDatabaseController(dbConnection);
+        HikariDataSource dataSource = new HikariDataSource(config);
+
+        try {
+            FoundationDatabaseController dbController = new PostgresFoundationDatabaseController(dataSource);
             MapImageGetter mapImageGetter = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator());
             EndpointController controller = new EndpointController(mapImageGetter, dbController);
 
