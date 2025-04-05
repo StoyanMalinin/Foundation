@@ -1,6 +1,8 @@
 package foundation.web;
 
+import com.google.gson.Gson;
 import foundation.database.FoundationDatabaseController;
+import foundation.database.structure.SearchMetadata;
 import foundation.map.MapImageColorizer;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.TileGridUtils;
@@ -13,28 +15,21 @@ import org.eclipse.jetty.util.Callback;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.sql.SQLException;
+import java.util.List;
 
 public class EndpointController {
     private MapImageGetter mapImageGetter;
     private MapImageColorizer mapImageColorizer;
+    private FoundationDatabaseController dbController;
 
     public EndpointController(MapImageGetter mapImageGetter, FoundationDatabaseController dbController) {
         this.mapImageGetter = mapImageGetter;
         this.mapImageColorizer = new MapImageColorizer(dbController);
+        this.dbController = dbController;
     }
 
     public boolean handleMapTileImage(Request request, Response response, Callback callback) {
-        if (request.getMethod().equals("OPTIONS")) {
-            response.getHeaders().put("Access-Control-Allow-Origin", "*");
-            response.getHeaders().put("Access-Control-Allow-Methods", "GET, POST, OPTIONS, PUT, DELETE");
-            response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
-            response.getHeaders().put("Access-Control-Allow-Credentials", "true");
-
-            response.setStatus(200);
-            callback.succeeded();
-            return true;
-        }
-
         response.getHeaders().put("Access-Control-Allow-Origin", "*");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
 
@@ -93,5 +88,30 @@ public class EndpointController {
 
             return true;
         }
+    }
+
+    public boolean handleGetSearchesMetadata(Request request, Response response, Callback callback) {
+        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+
+        Gson gson = new Gson();
+
+        List<SearchMetadata> searchMetadataList = null;
+        try {
+            searchMetadataList = dbController.getSearchesMetadata();
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not get searches metadata: " + e.getMessage(), callback);
+
+            return true;
+        }
+
+        String json = gson.toJson(searchMetadataList);
+
+        response.setStatus(200);
+        response.getHeaders().put("Content-Type", "application/json");
+        Content.Sink.write(response, true, json, callback);
+
+        return true;
     }
 }

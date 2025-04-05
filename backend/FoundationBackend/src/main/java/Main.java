@@ -79,8 +79,17 @@ public class Main {
                     new ServletPathSpec("/map-tile"),
                     new Handler.Abstract() {
                         @Override
-                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                        public boolean handle(Request request, Response response, Callback callback) {
                             return controller.handleMapTileImage(request, response, callback);
+                        }
+                    });
+
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/searches-metadata"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            return controller.handleGetSearchesMetadata(request, response, callback);
                         }
                     });
 

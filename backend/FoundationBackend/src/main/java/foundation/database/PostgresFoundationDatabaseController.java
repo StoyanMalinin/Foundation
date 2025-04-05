@@ -47,4 +47,22 @@ public class PostgresFoundationDatabaseController implements FoundationDatabaseC
             return presences;
         }
     }
+
+    @Override
+    public List<SearchMetadata> getSearchesMetadata() throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT searches.title as title FROM foundation.searches as searches");
+
+            List<SearchMetadata> searchMetadataList = new ArrayList<>();
+            try (ResultSet resultSet = preparedStatement.executeQuery()){
+                while (resultSet.next()) {
+                    String title = resultSet.getString("title");
+                    searchMetadataList.add(new SearchMetadata(title));
+                }
+            }
+
+            return searchMetadataList;
+        }
+    }
 }
