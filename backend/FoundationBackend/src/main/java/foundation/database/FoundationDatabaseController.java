@@ -9,4 +9,8 @@ public interface FoundationDatabaseController {
     List<Presence> getAllPresencesOfSearchInsideBoundingBox(int searchId, double minX, double maxX, double minY, double maxY) throws SQLException;
 
     List<SearchMetadata> getSearchesMetadata() throws SQLException;
+
+    User getUserByUsername(String username) throws SQLException;
+
+    void createUser(User user) throws SQLException;
 }

@@ -42,3 +42,11 @@ create table foundation.search_to_presence
 
 alter table foundation.search_to_presence
     owner to postgres;
+
+create table foundation.users (
+    username varchar(255) not null primary key,
+    password_hash varchar(255) not null
+);
+
+alter table foundation.users
+    owner to postgres;

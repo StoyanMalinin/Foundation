@@ -1,8 +1,11 @@
 package foundation.web;
 
 import com.google.gson.Gson;
+import foundation.auth.LoginFormData;
+import foundation.auth.RegisterFormData;
 import foundation.database.FoundationDatabaseController;
 import foundation.database.structure.SearchMetadata;
+import foundation.database.structure.User;
 import foundation.map.MapImageColorizer;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.TileGridUtils;
@@ -12,6 +15,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Fields;
 import org.eclipse.jetty.util.Callback;
+import org.mindrot.jbcrypt.BCrypt;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -19,6 +23,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Objects;
 import java.util.Scanner;
 
 public class EndpointController {
@@ -118,13 +123,99 @@ public class EndpointController {
         return true;
     }
 
-    public boolean createSearch(Request request, Response response, Callback callback) {
+    public boolean handleLogin(Request request, Response response, Callback callback) {
+        if (!request.getMethod().equals("POST")) {
+            response.setStatus(405);
+            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
         response.getHeaders().put("Access-Control-Allow-Origin", "*");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
 
+        BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+
         Gson gson = new Gson();
+        LoginFormData loginFormData = gson.fromJson(reader, LoginFormData.class);
 
-        SearchMetadata search = gson.fromJson(new InputStreamReader(Content.Source.asInputStream(request)), SearchMetadata.class);
+        User user;
+        try {
+            user = dbController.getUserByUsername(loginFormData.username());
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not get user: " + e.getMessage(), callback);
 
+            callback.succeeded();
+            return true;
+        }
+
+        if (user == null) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Username or passowrd is wrong", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        if (!BCrypt.checkpw(loginFormData.password(), user.passwordHash())) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Username or passowrd is wrong", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        response.setStatus(200);
+        response.getHeaders().put("Content-Type", "application/json");
+
+        callback.succeeded();
+        return true;
+    }
+
+    public boolean handleRegister(Request request, Response response, Callback callback) {
+        if (!request.getMethod().equals("POST")) {
+            response.setStatus(405);
+            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+
+        Gson gson = new Gson();
+        RegisterFormData registerFormData = gson.fromJson(reader, RegisterFormData.class);
+
+        if (registerFormData.username() == null || registerFormData.password() == null) {
+            response.setStatus(400);
+            Content.Sink.write(response, true, "Bad request - username and password are required", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        String hashedPassword = BCrypt.hashpw(registerFormData.password(), BCrypt.gensalt());
+
+        User newUser = new User(registerFormData.username(), hashedPassword);
+        try {
+            dbController.createUser(newUser);
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not add user: " + e.getMessage(), callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        response.setStatus(201);
+        response.getHeaders().put("Content-Type", "application/json");
+
+        callback.succeeded();
+        return true;
     }
 }

@@ -65,4 +65,34 @@ public class PostgresFoundationDatabaseController implements FoundationDatabaseC
             return searchMetadataList;
         }
     }
+
+    @Override
+    public User getUserByUsername(String username) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT users.username as username, users.password_hash as password_hash FROM foundation.users as users WHERE users.username = ?");
+            preparedStatement.setString(1, username);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()){
+                if (resultSet.next()) {
+                    String userName = resultSet.getString("username");
+                    String passwordHash = resultSet.getString("password_hash");
+                    return new User(userName, passwordHash);
+                }
+            }
+
+            return null;
+        }
+    }
+
+    @Override
+    public void createUser(User user) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "INSERT INTO foundation.users (username, password_hash) VALUES (?, ?)");
+            preparedStatement.setString(1, user.username());
+            preparedStatement.setString(2, user.passwordHash());
+            preparedStatement.executeUpdate();
+        }
+    }
 }

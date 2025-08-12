@@ -91,6 +91,24 @@ public class Main {
                         }
                     });
 
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/login"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            return controller.handleLogin(request, response, callback);
+                        }
+                    });
+
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/register"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            return controller.handleRegister(request, response, callback);
+                        }
+                    });
+
             server.setHandler(pathMappingsHandler);
 
             server.start();
