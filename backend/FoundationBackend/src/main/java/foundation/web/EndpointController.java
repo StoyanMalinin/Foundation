@@ -3,6 +3,8 @@ package foundation.web;
 import com.google.gson.Gson;
 import foundation.auth.LoginFormData;
 import foundation.auth.RegisterFormData;
+import foundation.auth.SuccessfulLoginResponse;
+import foundation.auth.TokenManager;
 import foundation.database.FoundationDatabaseController;
 import foundation.database.structure.SearchMetadata;
 import foundation.database.structure.User;
@@ -23,18 +25,20 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.List;
-import java.util.Objects;
-import java.util.Scanner;
 
 public class EndpointController {
     private MapImageGetter mapImageGetter;
     private MapImageColorizer mapImageColorizer;
     private FoundationDatabaseController dbController;
+    private TokenManager tokenManager;
 
-    public EndpointController(MapImageGetter mapImageGetter, FoundationDatabaseController dbController) {
+    public EndpointController(
+            MapImageGetter mapImageGetter, FoundationDatabaseController dbController,
+            TokenManager tokenManager) {
         this.mapImageGetter = mapImageGetter;
         this.mapImageColorizer = new MapImageColorizer(dbController);
         this.dbController = dbController;
+        this.tokenManager = tokenManager;
     }
 
     public boolean handleMapTileImage(Request request, Response response, Callback callback) {
@@ -167,8 +171,7 @@ public class EndpointController {
             return true;
         }
 
-        response.setStatus(200);
-        response.getHeaders().put("Content-Type", "application/json");
+        createSuccessfulLoginResponse(user.username(), response, callback);
 
         callback.succeeded();
         return true;
@@ -212,10 +215,21 @@ public class EndpointController {
             return true;
         }
 
-        response.setStatus(201);
-        response.getHeaders().put("Content-Type", "application/json");
+        createSuccessfulLoginResponse(newUser.username(), response, callback);
 
         callback.succeeded();
         return true;
+    }
+
+    private void createSuccessfulLoginResponse(String username, Response response, Callback callback) {
+        response.setStatus(200);
+
+        String token = tokenManager.generateToken(username);
+        SuccessfulLoginResponse successfulLoginResponse = new SuccessfulLoginResponse(token);
+
+        Gson gson = new Gson();
+        String jsonResponse = gson.toJson(successfulLoginResponse);
+        response.getHeaders().put("Content-Type", "application/json");
+        Content.Sink.write(response, true, jsonResponse, callback);
     }
 }

@@ -32,6 +32,12 @@ public class TokenManager {
 
     public String getUsernameFromToken(String token) throws JWTVerificationException {
         DecodedJWT jwt = verifier.verify(token);
+
+        Instant now = Instant.now();
+        if (jwt.getExpiresAt() == null || jwt.getExpiresAt().toInstant().isBefore(now)) {
+            throw new JWTVerificationException("Token has expired");
+        }
+
         return jwt.getSubject();
     }
 }

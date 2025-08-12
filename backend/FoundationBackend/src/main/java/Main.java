@@ -1,5 +1,6 @@
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import foundation.auth.TokenManager;
 import foundation.database.FoundationDatabaseController;
 import foundation.database.PostgresFoundationDatabaseController;
 import foundation.map.MapImageGetter;
@@ -19,6 +20,9 @@ import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) {
+        String tokenSecret = "token-secret";
+        TokenManager tokenManager = new TokenManager(tokenSecret);
+
         QueuedThreadPool threadPool = new QueuedThreadPool();
         threadPool.setName("server");
 
@@ -55,7 +59,7 @@ public class Main {
         try {
             FoundationDatabaseController dbController = new PostgresFoundationDatabaseController(dataSource);
             MapImageGetter mapImageGetter = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator());
-            EndpointController controller = new EndpointController(mapImageGetter, dbController);
+            EndpointController controller = new EndpointController(mapImageGetter, dbController, tokenManager);
 
             PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
 
