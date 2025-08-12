@@ -64,8 +64,6 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            System.out.println("are bate");
-
                             response.setStatus(200);
                             response.getHeaders().put("Content-Type", "text/html");
                             Content.Sink.write(response, true, "<h1>zdr " + Request.getParameters(request).get("name") + "</h1>", callback);

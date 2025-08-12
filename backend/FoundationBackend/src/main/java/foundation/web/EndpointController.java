@@ -15,8 +15,11 @@ import org.eclipse.jetty.util.Callback;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Scanner;
 
 public class EndpointController {
     private MapImageGetter mapImageGetter;
@@ -113,5 +116,15 @@ public class EndpointController {
         Content.Sink.write(response, true, json, callback);
 
         return true;
+    }
+
+    public boolean createSearch(Request request, Response response, Callback callback) {
+        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+
+        Gson gson = new Gson();
+
+        SearchMetadata search = gson.fromJson(new InputStreamReader(Content.Source.asInputStream(request)), SearchMetadata.class);
+
     }
 }

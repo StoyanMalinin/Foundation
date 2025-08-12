@@ -52,7 +52,7 @@ public class PostgresFoundationDatabaseController implements FoundationDatabaseC
     public List<SearchMetadata> getSearchesMetadata() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(
-                    "SELECT searches.title as title FROM foundation.searches as searches");
+                    "SELECT searches.title as title, searches.created_at as created_at FROM foundation.searches as searches");
 
             List<SearchMetadata> searchMetadataList = new ArrayList<>();
             try (ResultSet resultSet = preparedStatement.executeQuery()){

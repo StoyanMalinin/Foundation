@@ -21,7 +21,8 @@ create table foundation.searches
         constraint searches_pk
             primary key,
     title       varchar(255) default NULL::character varying not null,
-    description text                                         not null
+    description text                                         not null,
+    created_at  timestamp                                    not null
 );
 
 alter table foundation.searches
