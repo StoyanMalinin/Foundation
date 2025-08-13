@@ -1,12 +1,10 @@
 package foundation.database;
 
-import java.sql.Connection;
+import java.sql.*;
+
 import foundation.database.structure.*;
 
 import javax.sql.DataSource;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,6 +90,72 @@ public class PostgresFoundationDatabaseController implements FoundationDatabaseC
                     "INSERT INTO foundation.users (username, password_hash) VALUES (?, ?)");
             preparedStatement.setString(1, user.username());
             preparedStatement.setString(2, user.passwordHash());
+            preparedStatement.executeUpdate();
+        }
+    }
+
+    @Override
+    public void createRefreshToken(RefreshToken refreshToken) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "INSERT INTO foundation.refresh_tokens (username, token, expires_at) VALUES (?, ?, ?)");
+            preparedStatement.setString(1, refreshToken.username());
+            preparedStatement.setString(2, refreshToken.token());
+            preparedStatement.setTimestamp(3, refreshToken.expiresAt());
+
+            preparedStatement.executeUpdate();
+        }
+    }
+
+    @Override
+    public RefreshToken getRefreshToken(String token) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT refresh_tokens.username as username, refresh_tokens.token as token, refresh_tokens.expires_at as expires_at " +
+                            "FROM foundation.refresh_tokens as refresh_tokens WHERE refresh_tokens.token = ?");
+            preparedStatement.setString(1, token);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()){
+                if (resultSet.next()) {
+                    String username = resultSet.getString("username");
+                    String tokenValue = resultSet.getString("token");
+                    Timestamp expiresAt = resultSet.getTimestamp("expires_at");
+
+                    return new RefreshToken(username, tokenValue, expiresAt);
+                }
+            }
+
+            return null;
+        }
+    }
+
+    @Override
+    public RefreshToken getRefreshTokenByUsername(String username) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "SELECT refresh_tokens.username as username, refresh_tokens.token as token, refresh_tokens.expires_at as expires_at " +
+                            "FROM foundation.refresh_tokens as refresh_tokens WHERE refresh_tokens.username = ?");
+            preparedStatement.setString(1, username);
+
+            try (ResultSet resultSet = preparedStatement.executeQuery()){
+                if (resultSet.next()) {
+                    String tokenValue = resultSet.getString("token");
+                    Timestamp expiresAt = resultSet.getTimestamp("expires_at");
+
+                    return new RefreshToken(username, tokenValue, expiresAt);
+                }
+            }
+
+            return null;
+        }
+    }
+
+    @Override
+    public void deleteRefreshToken(String token) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            PreparedStatement preparedStatement = connection.prepareStatement(
+                    "DELETE FROM foundation.refresh_tokens WHERE token = ?");
+            preparedStatement.setString(1, token);
             preparedStatement.executeUpdate();
         }
     }

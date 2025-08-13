@@ -6,12 +6,14 @@ import foundation.auth.RegisterFormData;
 import foundation.auth.SuccessfulLoginResponse;
 import foundation.auth.TokenManager;
 import foundation.database.FoundationDatabaseController;
+import foundation.database.structure.RefreshToken;
 import foundation.database.structure.SearchMetadata;
 import foundation.database.structure.User;
 import foundation.map.MapImageColorizer;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.TileGridUtils;
 import observability.PerformanceUtils;
+import org.eclipse.jetty.http.HttpCookie;
 import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
@@ -24,7 +26,11 @@ import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.UUID;
 
 public class EndpointController {
     private MapImageGetter mapImageGetter;
@@ -224,6 +230,35 @@ public class EndpointController {
     private void createSuccessfulLoginResponse(String username, Response response, Callback callback) {
         response.setStatus(200);
 
+        String refreshTokenValue;
+        try {
+            RefreshToken existingToken = dbController.getRefreshTokenByUsername(username);
+            if (existingToken != null && existingToken.expiresAt().before(Timestamp.from(Instant.now()))) {
+                dbController.deleteRefreshToken(existingToken.token());
+                existingToken = null;
+            }
+
+            if (existingToken == null) {
+                refreshTokenValue = UUID.randomUUID().toString();
+                RefreshToken refreshToken = new RefreshToken(username, refreshTokenValue,
+                        Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS)));
+
+                dbController.createRefreshToken(refreshToken);
+            } else {
+                refreshTokenValue = existingToken.token();
+            }
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not create refresh token: " + e.getMessage(), callback);
+            return;
+        }
+
+        String cookieString = String.format(
+                "%s=\"%s\"; Path=%s; Max-Age=%d; Secure; HttpOnly",
+                "refresh_token", refreshTokenValue, "/", 60 * 60 * 24 * 7
+        );
+        response.getHeaders().put("Set-Cookie", cookieString);
+
         String token = tokenManager.generateToken(username);
         SuccessfulLoginResponse successfulLoginResponse = new SuccessfulLoginResponse(token);
 
@@ -231,5 +266,76 @@ public class EndpointController {
         String jsonResponse = gson.toJson(successfulLoginResponse);
         response.getHeaders().put("Content-Type", "application/json");
         Content.Sink.write(response, true, jsonResponse, callback);
+    }
+
+    public boolean handleRefreshJWT(Request request, Response response, Callback callback) {
+            if (!request.getMethod().equals("POST")) {
+            response.setStatus(405);
+            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+
+        List<HttpCookie> cookies = Request.getCookies(request);
+        HttpCookie refreshTokenCookie = cookies.stream()
+                .filter(cookie -> "refresh_token".equals(cookie.getName()))
+                .findFirst()
+                .orElse(null);
+        if (refreshTokenCookie == null) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - no refresh token provided", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        RefreshToken refreshToken;
+        try {
+            refreshToken = dbController.getRefreshToken(refreshTokenCookie.getValue());
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not get refresh token: " + e.getMessage(), callback);
+            return true;
+        }
+
+        if (refreshToken == null) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - invalid or missing refresh token", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        if (refreshToken.expiresAt().before(Timestamp.from(Instant.now()))) {
+            try {
+                dbController.deleteRefreshToken(refreshToken.token());
+            } catch (SQLException e) {
+                response.setStatus(500);
+                Content.Sink.write(response, true, "Internal server error - could not delete expired refresh token: " + e.getMessage(), callback);
+
+                return true;
+            }
+
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - refresh token has expired", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        String newJwt = tokenManager.generateToken(refreshToken.username());
+        SuccessfulLoginResponse successfulLoginResponse = new SuccessfulLoginResponse(newJwt);
+
+        Gson gson = new Gson();
+        String jsonResponse = gson.toJson(successfulLoginResponse);
+        response.getHeaders().put("Content-Type", "application/json");
+        Content.Sink.write(response, true, jsonResponse, callback);
+
+        callback.succeeded();
+        return true;
     }
 }

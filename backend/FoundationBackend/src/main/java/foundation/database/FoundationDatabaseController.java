@@ -13,4 +13,8 @@ public interface FoundationDatabaseController {
     User getUserByUsername(String username) throws SQLException;
 
     void createUser(User user) throws SQLException;
+    void createRefreshToken(RefreshToken refreshToken) throws SQLException;
+    RefreshToken getRefreshToken(String token) throws SQLException;
+    RefreshToken getRefreshTokenByUsername(String username) throws SQLException;
+    void deleteRefreshToken(String token) throws SQLException;
 }

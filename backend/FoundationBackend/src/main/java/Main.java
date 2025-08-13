@@ -113,6 +113,16 @@ public class Main {
                         }
                     });
 
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/refresh-jwt"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            return controller.handleRefreshJWT(request, response, callback);
+                        }
+                    }
+            );
+
             server.setHandler(pathMappingsHandler);
 
             server.start();

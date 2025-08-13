@@ -50,3 +50,12 @@ create table foundation.users (
 
 alter table foundation.users
     owner to postgres;
+
+create table foundation.refresh_tokens (
+    token varchar(255) not null primary key,
+    expires_at timestamp not null,
+    username varchar(255) not null unique
+);
+
+alter table foundation.refresh_tokens
+    owner to postgres;
