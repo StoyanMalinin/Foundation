@@ -35,7 +35,7 @@ export default function MapTile(props: MapTileProps) {
     const viewLatBox = [Math.max(latBox[0], props.lat[0]), Math.min(latBox[1], props.lat[1])];
     const viewLonBox = [Math.max(lonBox[0], props.lon[0]), Math.min(lonBox[1], props.lon[1])];
 
-    const dx1Fraction = (viewLonBox[0] - props.lon[0]) / (props.lon[1] - props.lon[0]); // fix later when we support going around the world (and the others below)
+    const dx1Fraction = (viewLonBox[0] - props.lon[0]) / (props.lon[1] - props.lon[0]);
     const dx2Fraction = (viewLonBox[1] - props.lon[0]) / (props.lon[1] - props.lon[0]);
     const dy1Fraction = (props.lat[1] - viewLatBox[1]) / (props.lat[1] - props.lat[0]); 
     const dy2Fraction = (props.lat[1] - viewLatBox[0]) / (props.lat[1] - props.lat[0]);
