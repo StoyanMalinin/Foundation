@@ -1,6 +1,8 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client";
+
+import { JWTManager } from "./auth/jwt/jwt-manager";
 
 export default function Home() {
-  return <p>Welcome to the foundation</p>;
+  debugger;
+  return <p>Hello, {JWTManager.getUsername()}</p>;
 }

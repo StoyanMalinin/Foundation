@@ -18,7 +18,7 @@ export default function Login() {
 
     const errorText = (<label style={{color: "red"}}>{formState.errorMessage}</label>)
     return <Form action={formAction}>
-        <label><b>Login</b></label><br></br>
+        <h2>Login</h2>
         <Input name="username" placeholder="Username" defaultValue={formState.username} type="text" /><br></br>
         <Input name="password" placeholder="Password" type="password" /><br></br>
         

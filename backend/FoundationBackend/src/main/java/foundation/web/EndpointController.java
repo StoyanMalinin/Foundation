@@ -362,13 +362,7 @@ public class EndpointController {
             return true;
         }
 
-        String newJwt = tokenManager.generateToken(refreshToken.username());
-        SuccessfulLoginResponse successfulLoginResponse = new SuccessfulLoginResponse(newJwt);
-
-        Gson gson = new Gson();
-        String jsonResponse = gson.toJson(successfulLoginResponse);
-        response.getHeaders().put("Content-Type", "application/json");
-        Content.Sink.write(response, true, jsonResponse, callback);
+        createSuccessfulLoginResponse(refreshToken.username(), response, callback);
 
         callback.succeeded();
         return true;
