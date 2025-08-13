@@ -114,6 +114,15 @@ public class Main {
                     });
 
             pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/logout"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            return controller.handleLogout(request, response, callback);
+                        }
+                    });
+
+            pathMappingsHandler.addMapping(
                     new ServletPathSpec("/refresh-jwt"),
                     new Handler.Abstract() {
                         @Override

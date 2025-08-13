@@ -338,4 +338,47 @@ public class EndpointController {
         callback.succeeded();
         return true;
     }
+
+    public boolean handleLogout(Request request, Response response, Callback callback) {
+        if (!request.getMethod().equals("POST")) {
+            response.setStatus(405);
+            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+
+        List<HttpCookie> cookies = Request.getCookies(request);
+        HttpCookie refreshTokenCookie = cookies.stream()
+                .filter(cookie -> "refresh_token".equals(cookie.getName()))
+                .findFirst()
+                .orElse(null);
+        if (refreshTokenCookie == null) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - no refresh token provided", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        try {
+            dbController.deleteRefreshToken(refreshTokenCookie.getValue());
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not delete refresh token: " + e.getMessage(), callback);
+            return true;
+        }
+
+        String cookieString = "refresh_token=; Path=/; Max-Age=0; Secure; HttpOnly";
+        response.getHeaders().put("Set-Cookie", cookieString);
+
+        response.setStatus(200);
+        Content.Sink.write(response, true, "Logged out successfully", callback);
+
+        callback.succeeded();
+        return true;
+    }
 }
