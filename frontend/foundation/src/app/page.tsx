@@ -16,5 +16,5 @@ export default function Home() {
     fetchUsername();
   }, []);
 
-  return <p>Hello, {username == "" ? "Guest" : username}</p>;
+  return <h1>Hello, {username == "" ? "Guest" : username}</h1>;
 }

@@ -48,8 +48,9 @@ public class EndpointController {
     }
 
     public boolean handleMapTileImage(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
 
         if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(204);
@@ -116,8 +117,9 @@ public class EndpointController {
     }
 
     public boolean handleGetSearchesMetadata(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
 
         if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(204);
@@ -148,8 +150,9 @@ public class EndpointController {
     }
 
     public boolean handleLogin(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
 
         if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(204);
@@ -204,8 +207,9 @@ public class EndpointController {
     }
 
     public boolean handleRegister(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
 
         if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(204);
@@ -280,7 +284,7 @@ public class EndpointController {
         }
 
         String cookieString = String.format(
-                "%s=\"%s\"; Path=%s; Max-Age=%d; Secure; HttpOnly",
+                "%s=\"%s\"; Path=%s; Max-Age=%d; HttpOnly; SameSite=None; Secure",
                 "refresh_token", refreshTokenValue, "/", 60 * 60 * 24 * 7
         );
         response.getHeaders().put("Set-Cookie", cookieString);
@@ -295,8 +299,9 @@ public class EndpointController {
     }
 
     public boolean handleRefreshJWT(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
 
         if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(204);
@@ -311,9 +316,6 @@ public class EndpointController {
             callback.succeeded();
             return true;
         }
-
-        response.getHeaders().put("Access-Control-Allow-Origin", "*");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
 
         List<HttpCookie> cookies = Request.getCookies(request);
         HttpCookie refreshTokenCookie = cookies.stream()
@@ -369,8 +371,9 @@ public class EndpointController {
     }
 
     public boolean handleLogout(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "*");
+        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
 
         if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(204);
@@ -385,9 +388,6 @@ public class EndpointController {
             callback.succeeded();
             return true;
         }
-
-        response.getHeaders().put("Access-Control-Allow-Origin", "*");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
 
         List<HttpCookie> cookies = Request.getCookies(request);
         HttpCookie refreshTokenCookie = cookies.stream()
@@ -410,7 +410,7 @@ public class EndpointController {
             return true;
         }
 
-        String cookieString = "refresh_token=; Path=/; Max-Age=0; Secure; HttpOnly";
+        String cookieString = "refresh_token=; Path=/; Max-Age=0; HttpOnly; SameSite=None; Secure; Domain=localhost";
         response.getHeaders().put("Set-Cookie", cookieString);
 
         response.setStatus(200);

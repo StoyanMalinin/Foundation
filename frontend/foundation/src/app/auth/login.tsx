@@ -37,6 +37,7 @@ async function loginAction(prevState: FormState, formData: FormData): Promise<Fo
             'username': formData.get("username"),
             'password': formData.get("password"),
         }),
+        credentials: "include",
     });
 
     if (res.status == 200) {
