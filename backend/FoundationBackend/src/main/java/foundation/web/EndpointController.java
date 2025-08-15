@@ -37,6 +37,7 @@ public class EndpointController {
     private MapImageColorizer mapImageColorizer;
     private FoundationDatabaseController dbController;
     private TokenManager tokenManager;
+    private RegisterFormData registerFormData;
 
     public EndpointController(
             MapImageGetter mapImageGetter, FoundationDatabaseController dbController,
@@ -240,7 +241,8 @@ public class EndpointController {
 
         String hashedPassword = BCrypt.hashpw(registerFormData.password(), BCrypt.gensalt());
 
-        User newUser = new User(registerFormData.username(), hashedPassword);
+        User newUser = new User(registerFormData.username(), hashedPassword,
+                registerFormData.firstName(), registerFormData.lastName());
         try {
             dbController.createUser(newUser);
         } catch (SQLException e) {

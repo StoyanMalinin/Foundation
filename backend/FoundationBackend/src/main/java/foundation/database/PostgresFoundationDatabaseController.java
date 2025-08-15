@@ -75,7 +75,10 @@ public class PostgresFoundationDatabaseController implements FoundationDatabaseC
                 if (resultSet.next()) {
                     String userName = resultSet.getString("username");
                     String passwordHash = resultSet.getString("password_hash");
-                    return new User(userName, passwordHash);
+                    String firstName = resultSet.getString("first_name");
+                    String lastName = resultSet.getString("last_name");
+
+                    return new User(userName, passwordHash, firstName, lastName);
                 }
             }
 
@@ -87,9 +90,12 @@ public class PostgresFoundationDatabaseController implements FoundationDatabaseC
     public void createUser(User user) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             PreparedStatement preparedStatement = connection.prepareStatement(
-                    "INSERT INTO foundation.users (username, password_hash) VALUES (?, ?)");
+                    "INSERT INTO foundation.users (username, password_hash, first_name, last_name) VALUES (?, ?, ?, ?)");
             preparedStatement.setString(1, user.username());
             preparedStatement.setString(2, user.passwordHash());
+            preparedStatement.setString(3, user.firstName());
+            preparedStatement.setString(4, user.lastName());
+
             preparedStatement.executeUpdate();
         }
     }

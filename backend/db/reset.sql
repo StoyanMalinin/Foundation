@@ -45,7 +45,9 @@ alter table foundation.search_to_presence
 
 create table foundation.users (
     username varchar(255) not null primary key,
-    password_hash varchar(255) not null
+    password_hash varchar(255) not null,
+    first_name varchar(255) not null,
+    last_name varchar(255) not null
 );
 
 alter table foundation.users
