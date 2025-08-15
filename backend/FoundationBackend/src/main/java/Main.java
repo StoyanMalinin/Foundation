@@ -2,7 +2,7 @@ import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import foundation.auth.TokenManager;
 import foundation.database.FoundationDatabaseController;
-import foundation.database.PostgresFoundationDatabaseController;
+import foundation.database.PostgresFoundationDatabase;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.BaiscTomTomAPICommunicator;
 import foundation.map.tomtom.CachedTomTomAPICommunicator;
@@ -57,7 +57,7 @@ public class Main {
         HikariDataSource dataSource = new HikariDataSource(config);
 
         try {
-            FoundationDatabaseController dbController = new PostgresFoundationDatabaseController(dataSource);
+            PostgresFoundationDatabase dbController = new PostgresFoundationDatabase(dataSource);
             MapImageGetter mapImageGetter = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator());
             EndpointController controller = new EndpointController(mapImageGetter, dbController, tokenManager);
 

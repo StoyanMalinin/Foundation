@@ -5,7 +5,8 @@ import foundation.auth.LoginFormData;
 import foundation.auth.RegisterFormData;
 import foundation.auth.SuccessfulLoginResponse;
 import foundation.auth.TokenManager;
-import foundation.database.FoundationDatabaseController;
+import foundation.database.PostgresFoundationDatabase;
+import foundation.database.PostgresFoundationDatabaseTransaction;
 import foundation.database.structure.RefreshToken;
 import foundation.database.structure.SearchMetadata;
 import foundation.database.structure.User;
@@ -35,12 +36,12 @@ import java.util.UUID;
 public class EndpointController {
     private MapImageGetter mapImageGetter;
     private MapImageColorizer mapImageColorizer;
-    private FoundationDatabaseController dbController;
+    private PostgresFoundationDatabase dbController;
     private TokenManager tokenManager;
     private RegisterFormData registerFormData;
 
     public EndpointController(
-            MapImageGetter mapImageGetter, FoundationDatabaseController dbController,
+            MapImageGetter mapImageGetter, PostgresFoundationDatabase dbController,
             TokenManager tokenManager) {
         this.mapImageGetter = mapImageGetter;
         this.mapImageColorizer = new MapImageColorizer(dbController);
@@ -169,39 +170,46 @@ public class EndpointController {
             return true;
         }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+        try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+            Gson gson = new Gson();
+            LoginFormData loginFormData = gson.fromJson(reader, LoginFormData.class);
 
-        Gson gson = new Gson();
-        LoginFormData loginFormData = gson.fromJson(reader, LoginFormData.class);
+            User user;
+            try {
+                user = tx.getUserByUsername(loginFormData.username());
+            } catch (SQLException e) {
+                response.setStatus(500);
+                Content.Sink.write(response, true, "Internal server error - could not get user: " + e.getMessage(), callback);
 
-        User user;
-        try {
-            user = dbController.getUserByUsername(loginFormData.username());
-        } catch (SQLException e) {
+                tx.rollback();
+                callback.succeeded();
+                return true;
+            }
+
+            if (user == null) {
+                response.setStatus(401);
+                Content.Sink.write(response, true, "Username or passowrd is wrong", callback);
+
+                tx.rollback();
+                callback.succeeded();
+                return true;
+            }
+
+            if (!BCrypt.checkpw(loginFormData.password(), user.passwordHash())) {
+                response.setStatus(401);
+                Content.Sink.write(response, true, "Username or passowrd is wrong", callback);
+
+                tx.rollback();
+                callback.succeeded();
+                return true;
+            }
+
+            createSuccessfulLoginResponse(tx, user.username(), response, callback);
+        } catch (Exception e) {
             response.setStatus(500);
-            Content.Sink.write(response, true, "Internal server error - could not get user: " + e.getMessage(), callback);
-
-            callback.succeeded();
-            return true;
+            Content.Sink.write(response, true, "Internal server error - could not create transaction: " + e.getMessage(), callback);
         }
-
-        if (user == null) {
-            response.setStatus(401);
-            Content.Sink.write(response, true, "Username or passowrd is wrong", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
-        if (!BCrypt.checkpw(loginFormData.password(), user.passwordHash())) {
-            response.setStatus(401);
-            Content.Sink.write(response, true, "Username or passowrd is wrong", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
-        createSuccessfulLoginResponse(user.username(), response, callback);
 
         callback.succeeded();
         return true;
@@ -226,47 +234,53 @@ public class EndpointController {
             return true;
         }
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+        try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+            Gson gson = new Gson();
+            RegisterFormData registerFormData = gson.fromJson(reader, RegisterFormData.class);
 
-        Gson gson = new Gson();
-        RegisterFormData registerFormData = gson.fromJson(reader, RegisterFormData.class);
+            if (registerFormData.username() == null || registerFormData.password() == null) {
+                response.setStatus(400);
+                Content.Sink.write(response, true, "Bad request - username and password are required", callback);
 
-        if (registerFormData.username() == null || registerFormData.password() == null) {
-            response.setStatus(400);
-            Content.Sink.write(response, true, "Bad request - username and password are required", callback);
+                tx.rollback();
+                callback.succeeded();
+                return true;
+            }
 
-            callback.succeeded();
-            return true;
-        }
+            String hashedPassword = BCrypt.hashpw(registerFormData.password(), BCrypt.gensalt());
 
-        String hashedPassword = BCrypt.hashpw(registerFormData.password(), BCrypt.gensalt());
+            User newUser = new User(registerFormData.username(), hashedPassword,
+                    registerFormData.firstName(), registerFormData.lastName());
+            try {
+                tx.createUser(newUser);
+            } catch (SQLException e) {
+                response.setStatus(500);
+                Content.Sink.write(response, true, "Internal server error - could not add user: " + e.getMessage(), callback);
 
-        User newUser = new User(registerFormData.username(), hashedPassword,
-                registerFormData.firstName(), registerFormData.lastName());
-        try {
-            dbController.createUser(newUser);
-        } catch (SQLException e) {
+                tx.rollback();
+                callback.succeeded();
+                return true;
+            }
+
+            createSuccessfulLoginResponse(tx, newUser.username(), response, callback);
+        } catch (Exception e) {
             response.setStatus(500);
-            Content.Sink.write(response, true, "Internal server error - could not add user: " + e.getMessage(), callback);
-
-            callback.succeeded();
-            return true;
+            Content.Sink.write(response, true, "Internal server error - could not check if user exists: " + e.getMessage(), callback);
         }
-
-        createSuccessfulLoginResponse(newUser.username(), response, callback);
 
         callback.succeeded();
         return true;
     }
 
-    private void createSuccessfulLoginResponse(String username, Response response, Callback callback) {
+    private void createSuccessfulLoginResponse(PostgresFoundationDatabaseTransaction tx, String username, Response response, Callback callback) {
         response.setStatus(200);
 
         String refreshTokenValue;
         try {
-            RefreshToken existingToken = dbController.getRefreshTokenByUsername(username);
+            RefreshToken existingToken = tx.getRefreshTokenByUsername(username);
             if (existingToken != null && existingToken.expiresAt().before(Timestamp.from(Instant.now()))) {
-                dbController.deleteRefreshToken(existingToken.token());
+                tx.deleteRefreshToken(existingToken.token());
                 existingToken = null;
             }
 
@@ -275,13 +289,14 @@ public class EndpointController {
                 RefreshToken refreshToken = new RefreshToken(username, refreshTokenValue,
                         Timestamp.from(Instant.now().plus(7, ChronoUnit.DAYS)));
 
-                dbController.createRefreshToken(refreshToken);
+                tx.createRefreshToken(refreshToken);
             } else {
                 refreshTokenValue = existingToken.token();
             }
         } catch (SQLException e) {
             response.setStatus(500);
             Content.Sink.write(response, true, "Internal server error - could not create refresh token: " + e.getMessage(), callback);
+
             return;
         }
 
@@ -349,24 +364,29 @@ public class EndpointController {
             return true;
         }
 
-        if (refreshToken.expiresAt().before(Timestamp.from(Instant.now()))) {
-            try {
-                dbController.deleteRefreshToken(refreshToken.token());
-            } catch (SQLException e) {
-                response.setStatus(500);
-                Content.Sink.write(response, true, "Internal server error - could not delete expired refresh token: " + e.getMessage(), callback);
+        try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
+            if (refreshToken.expiresAt().before(Timestamp.from(Instant.now()))) {
+                try {
+                    tx.deleteRefreshToken(refreshToken.token());
+                } catch (SQLException e) {
+                    response.setStatus(500);
+                    Content.Sink.write(response, true, "Internal server error - could not delete expired refresh token: " + e.getMessage(), callback);
 
+                    return true;
+                }
+
+                response.setStatus(401);
+                Content.Sink.write(response, true, "Unauthorized - refresh token has expired", callback);
+
+                callback.succeeded();
                 return true;
             }
 
-            response.setStatus(401);
-            Content.Sink.write(response, true, "Unauthorized - refresh token has expired", callback);
-
-            callback.succeeded();
-            return true;
+            createSuccessfulLoginResponse(tx, refreshToken.username(), response, callback);
+        } catch (Exception e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not create transaction: " + e.getMessage(), callback);
         }
-
-        createSuccessfulLoginResponse(refreshToken.username(), response, callback);
 
         callback.succeeded();
         return true;
