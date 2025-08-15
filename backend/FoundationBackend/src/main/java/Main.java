@@ -132,6 +132,26 @@ public class Main {
                     }
             );
 
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/check-auth"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            return controller.handleCheckAuth(request, response, callback);
+                        }
+                    }
+            );
+
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/who-am-i"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            return controller.handleWhoAmI(request, response, callback);
+                        }
+                    }
+            );
+
             server.setHandler(pathMappingsHandler);
 
             server.start();

@@ -1,3 +1,10 @@
 package foundation.database.structure;
 
-public record User(String username, String passwordHash, String firstName, String lastName) {}
+import com.google.gson.annotations.SerializedName;
+
+public record User(
+        @SerializedName("username") String username,
+        @SerializedName("password_hash") String passwordHash,
+        @SerializedName("first_name") String firstName,
+        @SerializedName("last_name") String lastName
+) {}

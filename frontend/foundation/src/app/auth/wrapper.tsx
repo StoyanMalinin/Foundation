@@ -1,27 +1,29 @@
-"use client";
+"use cleint";
 
 import { useEffect, useState } from "react";
-import { JWTManager } from "./jwt/jwt-manager";
 import { redirect } from "next/navigation";
 
-export default function AuthWrapper({ children }: { children: React.ReactNode }) {
+export default function AuthWrapper({children}: {children: React.ReactNode}) {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
     useEffect(() => {
         const f = async function() {
-            const token = await JWTManager.getTokenRaw();
-            console.log("Token:", token);
-            setIsAuthenticated(token != null);
+            const authCheck = await fetch("https://localhost:6969/check-auth", {
+                method: "GET",
+                credentials: "include",
+            });
+
+            setIsAuthenticated(authCheck.status == 204);
         };
 
         f();
     }, []);
-    // useEffect(() => {
-    //     if (isAuthenticated === false) {
-    //         redirect("/auth/login");
-    //     }
-    // }, [isAuthenticated]);
+    useEffect(() => {
+        if (isAuthenticated === false) {
+            redirect("/auth/login");
+        }
+    }, [isAuthenticated]);
 
     if (isAuthenticated === null) return <>Loading...</>;
     else if (isAuthenticated) return <>{children}</>;
     else return <></>
-}
+}``

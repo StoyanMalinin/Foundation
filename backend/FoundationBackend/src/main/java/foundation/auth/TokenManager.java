@@ -30,6 +30,16 @@ public class TokenManager {
                 .sign(this.algorithm);
     }
 
+    public boolean verify(String token) {
+        try {
+            verifier.verify(token);
+            return true;
+        } catch (JWTVerificationException e) {
+            // Token verification failed
+            return false;
+        }
+    }
+
     public String getUsernameFromToken(String token) throws JWTVerificationException {
         DecodedJWT jwt = verifier.verify(token);
 

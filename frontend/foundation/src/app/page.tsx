@@ -1,20 +1,31 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { JWTManager } from "./auth/jwt/jwt-manager";
+
+type UserData = {
+  firstName: string;
+  lastName: string;
+};
 
 export default function Home() {
-  const [username, setUsername] = useState<String | null>();
+  const [userData, setUserData] = useState<UserData | null>(null);
   useEffect(() => {
-    const fetchUsername = async () => {
+    const fetchUserData = async () => {
       try {
-        const name = await JWTManager.getUsername();
-        setUsername(name);
+        const response = await fetch("https://localhost:6969/who-am-i", {
+          method: "GET",
+          credentials: "include",
+        });
+        const data = await response.json();
+        setUserData({
+          firstName: data["first_name"],
+          lastName: data["last_name"],
+        });
       } catch (error) {}
     };
 
-    fetchUsername();
+    fetchUserData();
   }, []);
 
-  return <h1>Hello, {username ?? "Guest"}</h1>;
+  return <h1>Hello, {userData == null ? "Guest" : `${userData.firstName} ${userData.lastName}`}</h1>;
 }

@@ -1,9 +1,9 @@
 package foundation.web;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import foundation.auth.LoginFormData;
 import foundation.auth.RegisterFormData;
-import foundation.auth.SuccessfulLoginResponse;
 import foundation.auth.TokenManager;
 import foundation.database.PostgresFoundationDatabase;
 import foundation.database.PostgresFoundationDatabaseTransaction;
@@ -20,6 +20,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Fields;
 import org.eclipse.jetty.util.Callback;
+import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
 
 import javax.imageio.ImageIO;
@@ -119,18 +120,12 @@ public class EndpointController {
     }
 
     public boolean handleGetSearchesMetadata(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "*");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
-        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
-
         if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(204);
 
             callback.succeeded();
             return true;
         }
-
-        Gson gson = new Gson();
 
         List<SearchMetadata> searchMetadataList = null;
         try {
@@ -142,6 +137,7 @@ public class EndpointController {
             return true;
         }
 
+        Gson gson = new Gson();
         String json = gson.toJson(searchMetadataList);
 
         response.setStatus(200);
@@ -300,19 +296,9 @@ public class EndpointController {
             return;
         }
 
-        String cookieString = String.format(
-                "%s=\"%s\"; Path=%s; Max-Age=%d; HttpOnly; SameSite=None; Secure",
-                "refresh_token", refreshTokenValue, "/", 60 * 60 * 24 * 7
-        );
-        response.getHeaders().put("Set-Cookie", cookieString);
+        String jwt = tokenManager.generateToken(username);
 
-        String token = tokenManager.generateToken(username);
-        SuccessfulLoginResponse successfulLoginResponse = new SuccessfulLoginResponse(token);
-
-        Gson gson = new Gson();
-        String jsonResponse = gson.toJson(successfulLoginResponse);
-        response.getHeaders().put("Content-Type", "application/json");
-        Content.Sink.write(response, true, jsonResponse, callback);
+        setAuthCookies(response, jwt, refreshTokenValue);
     }
 
     public boolean handleRefreshJWT(Request request, Response response, Callback callback) {
@@ -392,6 +378,146 @@ public class EndpointController {
         return true;
     }
 
+    public boolean handleCheckAuth(Request request, Response response, Callback callback) {
+        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
+        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
+
+        if (request.getMethod().equals("OPTIONS")) {
+            response.setStatus(204);
+
+            callback.succeeded();
+            return true;
+        }
+        if (!request.getMethod().equals("GET")) {
+            response.setStatus(405);
+            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        List<HttpCookie> cookies = Request.getCookies(request);
+        HttpCookie refreshTokenCookie = cookies.stream()
+                .filter(cookie -> "refresh_token".equals(cookie.getName()))
+                .findFirst()
+                .orElse(null);
+        HttpCookie jwtCookie = cookies.stream()
+                .filter(cookie -> "jwt".equals(cookie.getName()))
+                .findFirst()
+                .orElse(null);
+
+        if (jwtCookie != null && tokenManager.verify(jwtCookie.getValue())) {
+            response.setStatus(204);
+
+            callback.succeeded();
+            return true;
+        }
+
+        if (refreshTokenCookie == null) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - no refresh token provided", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        String username;
+        try {
+            String refreshTokenValue = refreshTokenCookie.getValue();
+            RefreshToken refreshToken = dbController.getRefreshToken(refreshTokenValue);
+            if (refreshToken == null || refreshToken.expiresAt().before(Timestamp.from(Instant.now()))) {
+                response.setStatus(401);
+                Content.Sink.write(response, true, "Unauthorized - invalid or expired refresh token", callback);
+
+                callback.succeeded();
+                return true;
+            }
+
+            username = refreshToken.username();
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not get refresh token: " + e.getMessage(), callback);
+
+            return true;
+        }
+
+        String jwt = tokenManager.generateToken(username);
+        setAuthCookies(response, jwt, refreshTokenCookie.getValue());
+
+        response.setStatus(204);
+
+        callback.succeeded();
+        return true;
+    }
+
+    public boolean handleWhoAmI(Request request, Response response, Callback callback) {
+        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
+        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
+
+        if (request.getMethod().equals("OPTIONS")) {
+            response.setStatus(204);
+
+            callback.succeeded();
+            return true;
+        }
+        if (!request.getMethod().equals("GET")) {
+            response.setStatus(405);
+            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        List<HttpCookie> cookies = Request.getCookies(request);
+        HttpCookie jwtCookie = cookies.stream()
+                .filter(cookie -> "jwt".equals(cookie.getName()))
+                .findFirst()
+                .orElse(null);
+
+        if (jwtCookie == null || !tokenManager.verify(jwtCookie.getValue())) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - no valid JWT provided", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        String username;
+        try {
+            username = tokenManager.getUsernameFromToken(jwtCookie.getValue());
+        } catch (Exception e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not verify JWT: " + e.getMessage(), callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        User user;
+        try {
+            user = dbController.getUserByUsername(username);
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not get user: " + e.getMessage(), callback);
+
+            return true;
+        }
+
+        response.setStatus(200);
+        response.getHeaders().put("Content-Type", "application/json");
+        Gson gson = new Gson();
+        JsonObject maskedObj = gson.toJsonTree(user).getAsJsonObject();
+        maskedObj.remove("password_hash"); // mask password hash
+        String json = gson.toJson(maskedObj);
+        
+        Content.Sink.write(response, true, json, callback);
+
+        callback.succeeded();
+        return true;
+    }
+
     public boolean handleLogout(Request request, Response response, Callback callback) {
         response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
@@ -432,13 +558,26 @@ public class EndpointController {
             return true;
         }
 
-        String cookieString = "refresh_token=; Path=/; Max-Age=0; HttpOnly; SameSite=None; Secure; Domain=localhost";
-        response.getHeaders().put("Set-Cookie", cookieString);
+        setAuthCookies(response, "", ""); // unset all tokens
 
         response.setStatus(200);
         Content.Sink.write(response, true, "Logged out successfully", callback);
 
         callback.succeeded();
         return true;
+    }
+
+    private static void setAuthCookies(Response response, String jwt, String refreshToken) {
+        String jwtCookieString = String.format(
+                "%s=\"%s\"; Path=%s; Max-Age=%d; HttpOnly; SameSite=None; Secure",
+                "jwt", jwt, "/", 60 * 20
+        );
+        response.getHeaders().add("Set-Cookie", jwtCookieString);
+
+        String cookieString = String.format(
+                "%s=\"%s\"; Path=%s; Max-Age=%d; HttpOnly; SameSite=None; Secure",
+                "refresh_token", refreshToken, "/", 60 * 60 * 24 * 7
+        );
+        response.getHeaders().add("Set-Cookie", cookieString);
     }
 }
