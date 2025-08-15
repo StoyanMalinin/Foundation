@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { JWTManager } from "./auth/jwt/jwt-manager";
 
 export default function Home() {
-  const [username, setUsername] = useState<String>();
+  const [username, setUsername] = useState<String | null>();
   useEffect(() => {
     const fetchUsername = async () => {
       try {
@@ -16,5 +16,5 @@ export default function Home() {
     fetchUsername();
   }, []);
 
-  return <h1>Hello, {username == "" ? "Guest" : username}</h1>;
+  return <h1>Hello, {username ?? "Guest"}</h1>;
 }

@@ -8,17 +8,13 @@ class _JWTManager {
         this.tokenDecoded = null;
     }
 
-    async getTokenRaw(): Promise<string> {
+    async getTokenRaw(): Promise<string | null> {
         await this.ensureToken();
-        if (this.tokenRaw == null) return "";
-
-        return this.tokenRaw ?? "";
+        return this.tokenRaw;
     }
-    async getUsername(): Promise<String> {
+    async getUsername(): Promise<String | null> {
         await this.ensureToken(); 
-        if (this.tokenDecoded == null) return "";
-
-        return this.tokenDecoded.sub ?? "";
+        return this.tokenDecoded?.sub ?? null;
     }
 
     private async ensureToken() {

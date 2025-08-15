@@ -119,7 +119,7 @@ public class EndpointController {
     }
 
     public boolean handleGetSearchesMetadata(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
+        response.getHeaders().put("Access-Control-Allow-Origin", "*");
         response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
         response.getHeaders().put("Access-Control-Allow-Credentials", "true");
 
