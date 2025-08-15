@@ -56,7 +56,7 @@ class DatabaseControllerMethods {
 
     public static User getUserByUsername(Connection connection, String username) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
-                "SELECT users.username as username, users.password_hash as password_hash FROM foundation.users as users WHERE users.username = ?");
+                "SELECT * FROM foundation.users as users WHERE users.username = ?");
         preparedStatement.setString(1, username);
 
         try (ResultSet resultSet = preparedStatement.executeQuery()){
