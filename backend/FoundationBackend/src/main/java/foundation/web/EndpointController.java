@@ -1,5 +1,6 @@
 package foundation.web;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import foundation.auth.LoginFormData;
@@ -126,10 +127,38 @@ public class EndpointController {
             callback.succeeded();
             return true;
         }
+        if (!request.getMethod().equals("GET")) {
+            response.setStatus(405);
+            Content.Sink.write(response, true, "Method not allowed - only GET is allowed", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        String authHeader = request.getHeaders().get("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - no Authorization header provided or invalid", callback);
+
+            callback.succeeded();
+            return true;
+        }
+        String jwt = authHeader.substring(8, authHeader.length() - 1); // Remove "Bearer "" prefix and " suffix
+
+        String username;
+        try {
+            username = tokenManager.getUsernameFromToken(jwt);
+        } catch (JWTVerificationException e) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - invalid JWT: " + e.getMessage(), callback);
+
+            callback.succeeded();
+            return true;
+        }
 
         List<SearchMetadata> searchMetadataList = null;
         try {
-            searchMetadataList = dbController.getSearchesMetadata();
+            searchMetadataList = dbController.getSearchesMetadataByUsername(username);
         } catch (SQLException e) {
             response.setStatus(500);
             Content.Sink.write(response, true, "Internal server error - could not get searches metadata: " + e.getMessage(), callback);
@@ -511,7 +540,7 @@ public class EndpointController {
         JsonObject maskedObj = gson.toJsonTree(user).getAsJsonObject();
         maskedObj.remove("password_hash"); // mask password hash
         String json = gson.toJson(maskedObj);
-        
+
         Content.Sink.write(response, true, json, callback);
 
         callback.succeeded();

@@ -25,8 +25,8 @@ public class PostgresFoundationDatabaseTransaction implements FoundationDatabase
     }
 
     @Override
-    public List<SearchMetadata> getSearchesMetadata() throws SQLException {
-        return DatabaseControllerMethods.getSearchesMetadata(connection);
+    public List<SearchMetadata> getSearchesMetadataByUsername(String username) throws SQLException {
+        return DatabaseControllerMethods.getSearchesMetadataByUsername(connection, username);
     }
 
     @Override

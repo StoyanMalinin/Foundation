@@ -15,6 +15,16 @@ create table foundation.presences
 alter table foundation.presences
     owner to postgres;
 
+create table foundation.users (
+    username varchar(255) not null primary key,
+    password_hash varchar(255) not null,
+    first_name varchar(255) not null,
+    last_name varchar(255) not null
+);
+
+alter table foundation.users
+    owner to postgres;
+
 create table foundation.searches
 (
     id          serial
@@ -22,7 +32,10 @@ create table foundation.searches
             primary key,
     title       varchar(255) default NULL::character varying not null,
     description text                                         not null,
-    created_at  timestamp                                    not null
+    created_at  timestamp                                    not null,
+    owner_username varchar(255) not null,
+
+    foreign key (owner_username) references users(username)
 );
 
 alter table foundation.searches
@@ -36,21 +49,11 @@ create table foundation.search_to_presence
     presence_id integer not null
         constraint search_to_presence_presences_id_fk
             references presences,
-    constraint search_to_presence_pk
-        primary key (search_id, presence_id)
+
+    primary key (search_id, presence_id)
 );
 
 alter table foundation.search_to_presence
-    owner to postgres;
-
-create table foundation.users (
-    username varchar(255) not null primary key,
-    password_hash varchar(255) not null,
-    first_name varchar(255) not null,
-    last_name varchar(255) not null
-);
-
-alter table foundation.users
     owner to postgres;
 
 create table foundation.refresh_tokens (

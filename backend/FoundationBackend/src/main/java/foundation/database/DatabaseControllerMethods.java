@@ -39,9 +39,10 @@ class DatabaseControllerMethods {
         return presences;
     }
 
-    public static List<SearchMetadata> getSearchesMetadata(Connection connection) throws SQLException {
+    public static List<SearchMetadata> getSearchesMetadataByUsername(Connection connection, String username) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
-                "SELECT searches.title as title, searches.created_at as created_at FROM foundation.searches as searches");
+                "SELECT searches.title as title, searches.created_at as created_at FROM foundation.searches as searches WHERE searches.owner_username = ?");
+        preparedStatement.setString(1, username);
 
         List<SearchMetadata> searchMetadataList = new ArrayList<>();
         try (ResultSet resultSet = preparedStatement.executeQuery()){
