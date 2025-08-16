@@ -151,6 +151,26 @@ public class Main {
                     }
             );
 
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/update-search"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            return controller.handleUpdateSearch(request, response, callback);
+                        }
+                    }
+            );
+
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/search"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            return controller.handleGetSearchById(request, response, callback);
+                        }
+                    }
+            );
+
             server.setHandler(pathMappingsHandler);
 
             server.start();

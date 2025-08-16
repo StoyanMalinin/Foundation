@@ -9,6 +9,7 @@ import foundation.auth.TokenManager;
 import foundation.database.PostgresFoundationDatabase;
 import foundation.database.PostgresFoundationDatabaseTransaction;
 import foundation.database.structure.RefreshToken;
+import foundation.database.structure.Search;
 import foundation.database.structure.SearchMetadata;
 import foundation.database.structure.User;
 import foundation.map.MapImageColorizer;
@@ -134,19 +135,9 @@ public class EndpointController {
             return true;
         }
 
-        String authHeader = request.getHeaders().get("Authorization");
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(401);
-            Content.Sink.write(response, true, "Unauthorized - no Authorization header provided or invalid", callback);
-
-            callback.succeeded();
-            return true;
-        }
-        String jwt = authHeader.substring(8, authHeader.length() - 1); // Remove "Bearer "" prefix and " suffix
-
         String username;
         try {
-            username = tokenManager.getUsernameFromToken(jwt);
+            username = getActorUsername(request);
         } catch (JWTVerificationException e) {
             response.setStatus(401);
             Content.Sink.write(response, true, "Unauthorized - invalid JWT: " + e.getMessage(), callback);
@@ -173,6 +164,16 @@ public class EndpointController {
         Content.Sink.write(response, true, json, callback);
 
         return true;
+    }
+
+    private String getActorUsername(Request request) {
+        String authHeader = request.getHeaders().get("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new JWTVerificationException("Authorization bearer header is missing");
+        }
+        String jwt = authHeader.substring(8, authHeader.length() - 1); // Remove "Bearer "" prefix and " suffix
+
+        return tokenManager.getUsernameFromToken(jwt);
     }
 
     public boolean handleLogin(Request request, Response response, Callback callback) {
@@ -607,5 +608,159 @@ public class EndpointController {
                 "refresh_token", refreshToken, "/", 60 * 60 * 24 * 7
         );
         response.getHeaders().add("Set-Cookie", cookieString);
+    }
+
+    public boolean handleUpdateSearch(Request request, Response response, Callback callback) {
+        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
+        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
+        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
+        response.getHeaders().put("Access-Control-Allow-Methods", "OPTIONS, PUT");
+
+        if (request.getMethod().equals("OPTIONS")) {
+            response.setStatus(204);
+
+            callback.succeeded();
+            return true;
+        }
+        if (!request.getMethod().equals("PUT")) {
+            response.setStatus(405);
+            Content.Sink.write(response, true, "Method not allowed - only GET is allowed", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+        Gson gson = new Gson();
+        Search updatedSearch = gson.fromJson(reader, Search.class);
+
+        List<HttpCookie> cookies = Request.getCookies(request);
+        HttpCookie jwtCookie = cookies.stream()
+                .filter(cookie -> "jwt".equals(cookie.getName()))
+                .findFirst()
+                .orElse(null);
+        if (jwtCookie == null) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - no JWT provided", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        String username;
+        try {
+            username = tokenManager.getUsernameFromToken(jwtCookie.getValue());
+        } catch (JWTVerificationException e) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - invalid JWT: " + e.getMessage(), callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
+            Search existingSearch;
+            try {
+                existingSearch = tx.getSearchById(updatedSearch.id());
+            } catch (SQLException e) {
+                response.setStatus(500);
+                Content.Sink.write(response, true, "Internal server error - could not get search: " + e.getMessage(), callback);
+
+                tx.rollback();
+                callback.succeeded();
+                return true;
+            }
+
+            if (!username.equals(existingSearch.owner_username())) {
+                response.setStatus(403);
+                Content.Sink.write(response, true, "Forbidden - you are not the owner of this search", callback);
+
+                tx.rollback();
+                callback.succeeded();
+                return true;
+            }
+
+            Search patchedSearch = new Search(
+                existingSearch.id(),
+                updatedSearch.title(),
+                updatedSearch.description(),
+                existingSearch.created_at(),
+                existingSearch.owner_username()
+            );
+
+            try {
+                tx.updateSearch(patchedSearch);
+            } catch (SQLException e) {
+                response.setStatus(500);
+                Content.Sink.write(response, true, "Internal server error - could not update search metadata: " + e.getMessage(), callback);
+
+                tx.rollback();
+                callback.succeeded();
+                return true;
+            }
+
+            response.setStatus(200);
+            Content.Sink.write(response, true, "Search metadata updated successfully", callback);
+        } catch (Exception e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not create transaction: " + e.getMessage(), callback);
+        }
+
+        callback.succeeded();
+        return true;
+    }
+
+    public boolean handleGetSearchById(Request request, Response response, Callback callback) {
+        if (request.getMethod().equals("OPTIONS")) {
+            response.setStatus(204);
+
+            callback.succeeded();
+            return true;
+        }
+        if (!request.getMethod().equals("GET")) {
+            response.setStatus(405);
+            Content.Sink.write(response, true, "Method not allowed - only GET is allowed", callback);
+
+            callback.succeeded();
+            return true;
+        }
+
+        int searchId;
+        Fields queryParams = null;
+        try {
+            queryParams = Request.getParameters(request);
+            searchId = Integer.parseInt(queryParams.getValue("id"));
+        } catch (Exception e) {
+            response.setStatus(400);
+            Content.Sink.write(response, true, "Bad request - invalid search ID", callback);
+
+            return true;
+        }
+
+        Search search;
+        try {
+            search = dbController.getSearchById(searchId);
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not get search: " + e.getMessage(), callback);
+
+            return true;
+        }
+
+        if (search == null) {
+            response.setStatus(404);
+            Content.Sink.write(response, true, "Not found - search with this ID does not exist", callback);
+
+            return true;
+        }
+
+        Gson gson = new Gson();
+        String json = gson.toJson(search);
+
+        response.setStatus(200);
+        response.getHeaders().put("Content-Type", "application/json");
+        Content.Sink.write(response, true, json, callback);
+
+        return true;
     }
 }

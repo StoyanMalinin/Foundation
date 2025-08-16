@@ -75,6 +75,20 @@ public class PostgresFoundationDatabase implements FoundationDatabaseController 
         }
     }
 
+    @Override
+    public Search getSearchById(int id) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            return DatabaseControllerMethods.getSearchById(connection, id);
+        }
+    }
+
+    @Override
+    public void updateSearch(Search search) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseControllerMethods.updateSearch(connection, search);
+        }
+    }
+
     public PostgresFoundationDatabaseTransaction createTransaction() throws SQLException {
         Connection connection = dataSource.getConnection();
         connection.setAutoCommit(false);

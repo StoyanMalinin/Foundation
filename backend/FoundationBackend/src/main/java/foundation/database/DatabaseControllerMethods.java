@@ -1,9 +1,6 @@
 package foundation.database;
 
-import foundation.database.structure.Presence;
-import foundation.database.structure.RefreshToken;
-import foundation.database.structure.SearchMetadata;
-import foundation.database.structure.User;
+import foundation.database.structure.*;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -136,6 +133,35 @@ class DatabaseControllerMethods {
         PreparedStatement preparedStatement = connection.prepareStatement(
                 "DELETE FROM foundation.refresh_tokens WHERE token = ?");
         preparedStatement.setString(1, token);
+        preparedStatement.executeUpdate();
+    }
+
+    public static Search getSearchById(Connection connection, int id) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "SELECT * FROM foundation.searches WHERE id = ?");
+        preparedStatement.setInt(1, id);
+
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            if (resultSet.next()) {
+                String title = resultSet.getString("title");
+                String description = resultSet.getString("description");
+                String createdAt = resultSet.getString("created_at");
+                String ownerUsername = resultSet.getString("owner_username");
+
+                return new Search(id, title, description, createdAt, ownerUsername);
+            }
+        }
+
+        return null;
+    }
+
+    public static void updateSearch(Connection connection, Search search) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "UPDATE foundation.searches SET title = ?, description = ? WHERE id = ?");
+        preparedStatement.setString(1, search.title());
+        preparedStatement.setString(2, search.description());
+        preparedStatement.setInt(3, search.id());
+
         preparedStatement.executeUpdate();
     }
 }

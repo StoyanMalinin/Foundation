@@ -1,9 +1,6 @@
 package foundation.database;
 
-import foundation.database.structure.Presence;
-import foundation.database.structure.RefreshToken;
-import foundation.database.structure.SearchMetadata;
-import foundation.database.structure.User;
+import foundation.database.structure.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -57,6 +54,16 @@ public class PostgresFoundationDatabaseTransaction implements FoundationDatabase
     @Override
     public void deleteRefreshToken(String token) throws SQLException {
         DatabaseControllerMethods.deleteRefreshToken(connection, token);
+    }
+
+    @Override
+    public Search getSearchById(int id) throws SQLException {
+        return DatabaseControllerMethods.getSearchById(connection, id);
+    }
+
+    @Override
+    public void updateSearch(Search search) throws SQLException {
+        DatabaseControllerMethods.updateSearch(connection, search);
     }
 
     @Override
