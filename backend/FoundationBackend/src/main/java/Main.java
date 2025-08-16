@@ -6,6 +6,10 @@ import foundation.map.MapImageGetter;
 import foundation.map.tomtom.BaiscTomTomAPICommunicator;
 import foundation.map.tomtom.CachedTomTomAPICommunicator;
 import foundation.web.EndpointController;
+import foundation.web.middleware.HandlerFunction;
+import foundation.web.middleware.MiddlewareUtils;
+import foundation.web.middleware.prehandler.BrowserPreHandlerMiddleware;
+import foundation.web.middleware.prehandler.EnsureHTTPMethodPreHandleMiddleware;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http.pathmap.ServletPathSpec;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
@@ -55,6 +59,8 @@ public class Main {
 
         HikariDataSource dataSource = new HikariDataSource(config);
 
+        BrowserPreHandlerMiddleware browserPreHandlerMiddleware = new BrowserPreHandlerMiddleware("http://localhost:3000");
+
         try {
             PostgresFoundationDatabase dbController = new PostgresFoundationDatabase(dataSource);
             MapImageGetter mapImageGetter = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator());
@@ -81,7 +87,13 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) {
-                            return controller.handleMapTileImage(request, response, callback);
+                            HandlerFunction fn = controller::handleMapTileImage;
+                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                                    fn,
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("GET")
+                            );
+
+                            return fn.apply(request, response, callback);
                         }
                     });
 
@@ -90,7 +102,13 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            return controller.handleGetAdminSearchesMetadata(request, response, callback);
+                            HandlerFunction fn = controller::handleGetAdminSearchesMetadata;
+                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                                    fn,
+                                    new EnsureHTTPMethodPreHandleMiddleware("GET")
+                            );
+
+                            return fn.apply(request, response, callback);
                         }
                     });
 
@@ -99,7 +117,13 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            return controller.handleLogin(request, response, callback);
+                            HandlerFunction fn = controller::handleLogin;
+                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                                    fn,
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("POST")
+                            );
+
+                            return fn.apply(request, response, callback);
                         }
                     });
 
@@ -108,7 +132,13 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            return controller.handleRegister(request, response, callback);
+                            HandlerFunction fn = controller::handleRegister;
+                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                                    fn,
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("POST")
+                            );
+
+                            return fn.apply(request, response, callback);
                         }
                     });
 
@@ -117,7 +147,13 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            return controller.handleLogout(request, response, callback);
+                            HandlerFunction fn = controller::handleLogout;
+                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                                    fn,
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("POST")
+                            );
+
+                            return fn.apply(request, response, callback);
                         }
                     });
 
@@ -126,7 +162,13 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            return controller.handleRefreshJWT(request, response, callback);
+                            HandlerFunction fn = controller::handleRefreshJWT;
+                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                                    fn,
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("POST")
+                            );
+
+                            return fn.apply(request, response, callback);
                         }
                     }
             );
@@ -136,7 +178,13 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            return controller.handleCheckAuth(request, response, callback);
+                            HandlerFunction fn = controller::handleCheckAuth;
+                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                                    fn,
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("GET")
+                            );
+
+                            return fn.apply(request, response, callback);
                         }
                     }
             );
@@ -146,7 +194,13 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            return controller.handleWhoAmI(request, response, callback);
+                            HandlerFunction fn = controller::handleWhoAmI;
+                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                                    fn,
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("GET")
+                            );
+
+                            return fn.apply(request, response, callback);
                         }
                     }
             );
@@ -156,7 +210,13 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            return controller.handleUpdateSearch(request, response, callback);
+                            HandlerFunction fn = controller::handleUpdateSearch;
+                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                                    fn,
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("PUT")
+                            );
+
+                            return fn.apply(request, response, callback);
                         }
                     }
             );
@@ -166,7 +226,13 @@ public class Main {
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            return controller.handleGetSearchById(request, response, callback);
+                            HandlerFunction fn = controller::handleGetSearchById;
+                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                                    fn,
+                                    new EnsureHTTPMethodPreHandleMiddleware("GET")
+                            );
+
+                            return fn.apply(request, response, callback);
                         }
                     }
             );

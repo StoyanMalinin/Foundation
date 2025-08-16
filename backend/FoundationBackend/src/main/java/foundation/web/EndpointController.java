@@ -52,17 +52,6 @@ public class EndpointController {
     }
 
     public boolean handleMapTileImage(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
-        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
-
-        if (request.getMethod().equals("OPTIONS")) {
-            response.setStatus(204);
-
-            callback.succeeded();
-            return true;
-        }
-
         Fields queryParams = null;
         try {
             queryParams = Request.getParameters(request);
@@ -121,20 +110,6 @@ public class EndpointController {
     }
 
     public boolean handleGetAdminSearchesMetadata(Request request, Response response, Callback callback) {
-        if (request.getMethod().equals("OPTIONS")) {
-            response.setStatus(204);
-
-            callback.succeeded();
-            return true;
-        }
-        if (!request.getMethod().equals("GET")) {
-            response.setStatus(405);
-            Content.Sink.write(response, true, "Method not allowed - only GET is allowed", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
         String username;
         try {
             username = getActorUsername(request);
@@ -177,24 +152,6 @@ public class EndpointController {
     }
 
     public boolean handleLogin(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
-        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
-
-        if (request.getMethod().equals("OPTIONS")) {
-            response.setStatus(204);
-
-            callback.succeeded();
-            return true;
-        }
-        if (!request.getMethod().equals("POST")) {
-            response.setStatus(405);
-            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
         try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
             Gson gson = new Gson();
@@ -241,24 +198,6 @@ public class EndpointController {
     }
 
     public boolean handleRegister(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
-        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
-
-        if (request.getMethod().equals("OPTIONS")) {
-            response.setStatus(204);
-
-            callback.succeeded();
-            return true;
-        }
-        if (!request.getMethod().equals("POST")) {
-            response.setStatus(405);
-            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
         try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
             BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
             Gson gson = new Gson();
@@ -331,24 +270,6 @@ public class EndpointController {
     }
 
     public boolean handleRefreshJWT(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
-        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
-
-        if (request.getMethod().equals("OPTIONS")) {
-            response.setStatus(204);
-
-            callback.succeeded();
-            return true;
-        }
-        if (!request.getMethod().equals("POST")) {
-            response.setStatus(405);
-            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
         List<HttpCookie> cookies = Request.getCookies(request);
         HttpCookie refreshTokenCookie = cookies.stream()
                 .filter(cookie -> "refresh_token".equals(cookie.getName()))
@@ -408,24 +329,6 @@ public class EndpointController {
     }
 
     public boolean handleCheckAuth(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
-        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
-
-        if (request.getMethod().equals("OPTIONS")) {
-            response.setStatus(204);
-
-            callback.succeeded();
-            return true;
-        }
-        if (!request.getMethod().equals("GET")) {
-            response.setStatus(405);
-            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
         List<HttpCookie> cookies = Request.getCookies(request);
         HttpCookie refreshTokenCookie = cookies.stream()
                 .filter(cookie -> "refresh_token".equals(cookie.getName()))
@@ -481,24 +384,6 @@ public class EndpointController {
     }
 
     public boolean handleWhoAmI(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
-        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
-
-        if (request.getMethod().equals("OPTIONS")) {
-            response.setStatus(204);
-
-            callback.succeeded();
-            return true;
-        }
-        if (!request.getMethod().equals("GET")) {
-            response.setStatus(405);
-            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
         List<HttpCookie> cookies = Request.getCookies(request);
         HttpCookie jwtCookie = cookies.stream()
                 .filter(cookie -> "jwt".equals(cookie.getName()))
@@ -548,24 +433,6 @@ public class EndpointController {
     }
 
     public boolean handleLogout(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
-        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
-
-        if (request.getMethod().equals("OPTIONS")) {
-            response.setStatus(204);
-
-            callback.succeeded();
-            return true;
-        }
-        if (!request.getMethod().equals("POST")) {
-            response.setStatus(405);
-            Content.Sink.write(response, true, "Method not allowed - only POST is allowed", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
         List<HttpCookie> cookies = Request.getCookies(request);
         HttpCookie refreshTokenCookie = cookies.stream()
                 .filter(cookie -> "refresh_token".equals(cookie.getName()))
@@ -611,25 +478,6 @@ public class EndpointController {
     }
 
     public boolean handleUpdateSearch(Request request, Response response, Callback callback) {
-        response.getHeaders().put("Access-Control-Allow-Origin", "http://localhost:3000");
-        response.getHeaders().put("Access-Control-Allow-Headers", "Origin,X-Requested-With, Content-Type, Accept");
-        response.getHeaders().put("Access-Control-Allow-Credentials", "true");
-        response.getHeaders().put("Access-Control-Allow-Methods", "OPTIONS, PUT");
-
-        if (request.getMethod().equals("OPTIONS")) {
-            response.setStatus(204);
-
-            callback.succeeded();
-            return true;
-        }
-        if (!request.getMethod().equals("PUT")) {
-            response.setStatus(405);
-            Content.Sink.write(response, true, "Method not allowed - only GET is allowed", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
         BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
         Gson gson = new Gson();
         Search updatedSearch = gson.fromJson(reader, Search.class);
@@ -711,20 +559,6 @@ public class EndpointController {
     }
 
     public boolean handleGetSearchById(Request request, Response response, Callback callback) {
-        if (request.getMethod().equals("OPTIONS")) {
-            response.setStatus(204);
-
-            callback.succeeded();
-            return true;
-        }
-        if (!request.getMethod().equals("GET")) {
-            response.setStatus(405);
-            Content.Sink.write(response, true, "Method not allowed - only GET is allowed", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
         int searchId;
         Fields queryParams = null;
         try {
