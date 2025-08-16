@@ -6,7 +6,7 @@ type SearchesMetadata = {
     title: string;
 }
 
-export default function SearchesMetadataListClient({searches}: {searches: SearchesMetadata[]}) {
+export default function AdminSearchesMetadataListClient({searches}: {searches: SearchesMetadata[]}) {
     return <Table>
         <TableHead>
             <TableRow>

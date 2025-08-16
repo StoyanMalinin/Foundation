@@ -1,7 +1,6 @@
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import foundation.auth.TokenManager;
-import foundation.database.FoundationDatabaseController;
 import foundation.database.PostgresFoundationDatabase;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.BaiscTomTomAPICommunicator;
@@ -87,11 +86,11 @@ public class Main {
                     });
 
             pathMappingsHandler.addMapping(
-                    new ServletPathSpec("/searches-metadata"),
+                    new ServletPathSpec("/admin-searches-metadata"),
                     new Handler.Abstract() {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
-                            return controller.handleGetSearchesMetadata(request, response, callback);
+                            return controller.handleGetAdminSearchesMetadata(request, response, callback);
                         }
                     });
 

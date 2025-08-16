@@ -1,8 +1,8 @@
 import AuthWrapper from "@/app/auth/wrapper";
-import SearchesMetadataListServer from "./searches-metadata-list-server";
+import AdminSearchesMetadataListServer from "./admin-searches-metadata-list-server";
 
 export default async function Page() {
     return <AuthWrapper>
-        <SearchesMetadataListServer />
+        <AdminSearchesMetadataListServer />
     </AuthWrapper>;
 }

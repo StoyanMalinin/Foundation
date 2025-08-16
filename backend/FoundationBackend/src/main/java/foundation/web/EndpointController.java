@@ -21,7 +21,6 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Fields;
 import org.eclipse.jetty.util.Callback;
-import org.json.JSONObject;
 import org.mindrot.jbcrypt.BCrypt;
 
 import javax.imageio.ImageIO;
@@ -120,7 +119,7 @@ public class EndpointController {
         }
     }
 
-    public boolean handleGetSearchesMetadata(Request request, Response response, Callback callback) {
+    public boolean handleGetAdminSearchesMetadata(Request request, Response response, Callback callback) {
         if (request.getMethod().equals("OPTIONS")) {
             response.setStatus(204);
 
