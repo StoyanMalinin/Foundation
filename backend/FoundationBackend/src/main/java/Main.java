@@ -8,8 +8,8 @@ import foundation.map.tomtom.CachedTomTomAPICommunicator;
 import foundation.web.EndpointController;
 import foundation.web.middleware.HandlerFunction;
 import foundation.web.middleware.MiddlewareUtils;
-import foundation.web.middleware.prehandler.BrowserPreHandlerMiddleware;
-import foundation.web.middleware.prehandler.EnsureHTTPMethodPreHandleMiddleware;
+import foundation.web.middleware.BrowserMiddleware;
+import foundation.web.middleware.EnsureHTTPMethodMiddleware;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http.pathmap.ServletPathSpec;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;
@@ -59,7 +59,7 @@ public class Main {
 
         HikariDataSource dataSource = new HikariDataSource(config);
 
-        BrowserPreHandlerMiddleware browserPreHandlerMiddleware = new BrowserPreHandlerMiddleware("http://localhost:3000");
+        BrowserMiddleware browserPreHandlerMiddleware = new BrowserMiddleware("http://localhost:3000");
 
         try {
             PostgresFoundationDatabase dbController = new PostgresFoundationDatabase(dataSource);
@@ -90,7 +90,7 @@ public class Main {
                             HandlerFunction fn = controller::handleMapTileImage;
                             fn = MiddlewareUtils.applyPreHandlerMiddleware(
                                     fn,
-                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("GET")
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("GET")
                             );
 
                             return fn.apply(request, response, callback);
@@ -105,7 +105,7 @@ public class Main {
                             HandlerFunction fn = controller::handleGetAdminSearchesMetadata;
                             fn = MiddlewareUtils.applyPreHandlerMiddleware(
                                     fn,
-                                    new EnsureHTTPMethodPreHandleMiddleware("GET")
+                                    new EnsureHTTPMethodMiddleware("GET")
                             );
 
                             return fn.apply(request, response, callback);
@@ -120,7 +120,7 @@ public class Main {
                             HandlerFunction fn = controller::handleLogin;
                             fn = MiddlewareUtils.applyPreHandlerMiddleware(
                                     fn,
-                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("POST")
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("POST")
                             );
 
                             return fn.apply(request, response, callback);
@@ -135,7 +135,7 @@ public class Main {
                             HandlerFunction fn = controller::handleRegister;
                             fn = MiddlewareUtils.applyPreHandlerMiddleware(
                                     fn,
-                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("POST")
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("POST")
                             );
 
                             return fn.apply(request, response, callback);
@@ -150,7 +150,7 @@ public class Main {
                             HandlerFunction fn = controller::handleLogout;
                             fn = MiddlewareUtils.applyPreHandlerMiddleware(
                                     fn,
-                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("POST")
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("POST")
                             );
 
                             return fn.apply(request, response, callback);
@@ -165,7 +165,7 @@ public class Main {
                             HandlerFunction fn = controller::handleRefreshJWT;
                             fn = MiddlewareUtils.applyPreHandlerMiddleware(
                                     fn,
-                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("POST")
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("POST")
                             );
 
                             return fn.apply(request, response, callback);
@@ -181,7 +181,7 @@ public class Main {
                             HandlerFunction fn = controller::handleCheckAuth;
                             fn = MiddlewareUtils.applyPreHandlerMiddleware(
                                     fn,
-                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("GET")
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("GET")
                             );
 
                             return fn.apply(request, response, callback);
@@ -197,7 +197,7 @@ public class Main {
                             HandlerFunction fn = controller::handleWhoAmI;
                             fn = MiddlewareUtils.applyPreHandlerMiddleware(
                                     fn,
-                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("GET")
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("GET")
                             );
 
                             return fn.apply(request, response, callback);
@@ -213,7 +213,7 @@ public class Main {
                             HandlerFunction fn = controller::handleUpdateSearch;
                             fn = MiddlewareUtils.applyPreHandlerMiddleware(
                                     fn,
-                                    browserPreHandlerMiddleware, new EnsureHTTPMethodPreHandleMiddleware("PUT")
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("PUT")
                             );
 
                             return fn.apply(request, response, callback);
@@ -229,7 +229,7 @@ public class Main {
                             HandlerFunction fn = controller::handleGetSearchById;
                             fn = MiddlewareUtils.applyPreHandlerMiddleware(
                                     fn,
-                                    new EnsureHTTPMethodPreHandleMiddleware("GET")
+                                    new EnsureHTTPMethodMiddleware("GET")
                             );
 
                             return fn.apply(request, response, callback);
