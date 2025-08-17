@@ -1,4 +1,6 @@
-import { Button, Input } from "@mui/material";
+"use client";
+
+import { Box, Button, FormControl, FormControlLabel, FormLabel, Input, TextField } from "@mui/material";
 import Form from "next/form";
 
 export type Search = {
@@ -20,10 +22,16 @@ export function SearchForm(
     return (
         <>
             <Form action={formAction}>
-                <Input type="text" placeholder="Title" name="title" defaultValue={formState.search.title} /><br></br>
-                <Input type="text" placeholder="Description" name="description" defaultValue={formState.search.description} /><br></br>
+                <FormControl>
+                    <FormLabel htmlFor="title">Title</FormLabel>
+                    <Input id="title" type="text" placeholder="Title" name="title" defaultValue={formState.search.title} />
+                </FormControl><br></br><br></br>
+                <FormControl>
+                    <FormLabel htmlFor="description">Description</FormLabel>
+                    <TextField id="description" multiline variant="outlined" type="text" placeholder="Description" name="description" defaultValue={formState.search.description} />
+                </FormControl><br></br><br></br>
 
-                <Button type="submit">{submitText}</Button>
+                <Button type="submit" variant="contained">{submitText}</Button>
             </Form>
 
             {formState.errorMessage != "" && <><br/><br/>{errorText}</>}

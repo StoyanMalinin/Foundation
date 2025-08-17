@@ -149,7 +149,7 @@ class DatabaseControllerMethods {
                 Timestamp createdAt = resultSet.getTimestamp("created_at");
                 String ownerUsername = resultSet.getString("owner_username");
 
-                return new Search(id, title, description, createdAt, ownerUsername);
+                return new Search(id, title, description, c reatedAt, ownerUsername);
             }
         }
 

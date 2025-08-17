@@ -1,6 +1,7 @@
 "use client";
 
-import { Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import { Button, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
+import { redirect, useRouter } from "next/navigation";
 
 type SearchesMetadata = {
     id: number;
@@ -19,9 +20,38 @@ export default function AdminSearchesMetadataListClient({searches}: {searches: S
             {searches.map((item) => (
                 <TableRow key={item.id}>
                     <TableCell align="center">{item.title}</TableCell>
-                    <TableCell align="center">TODO</TableCell>
+                    <TableCell 
+                        align="center"
+                        sx={{
+                            display: 'flex',
+                            gap: '10px',
+                            justifyContent: 'center',
+                        }}>
+                        <ViewButton searchId={item.id} />
+                        <UpdateButton searchId={item.id} />
+                    </TableCell>
                 </TableRow>
             ))}
         </TableBody>
     </Table>
+}
+
+function UpdateButton({searchId}: {searchId: number}) {
+    const router = useRouter();
+
+    return (
+        <Button variant="contained" onClick={() => router.push(`/dashboard/search/update?id=${searchId}`)}>
+            Update
+        </Button>
+    );
+}
+
+function ViewButton({searchId}: {searchId: number}) {
+    const router = useRouter();
+
+    return (
+        <Button variant="contained" onClick={() => router.push(`/dashboard/search/view?id=${searchId}`)}>
+            View
+        </Button>
+    );
 }
