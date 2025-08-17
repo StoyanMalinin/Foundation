@@ -67,6 +67,11 @@ public class PostgresFoundationDatabaseTransaction implements FoundationDatabase
     }
 
     @Override
+    public void createSearch(Search search) throws SQLException {
+        DatabaseControllerMethods.createSearch(connection, search);
+    }
+
+    @Override
     public void close() throws Exception {
         connection.commit();
         connection.close();

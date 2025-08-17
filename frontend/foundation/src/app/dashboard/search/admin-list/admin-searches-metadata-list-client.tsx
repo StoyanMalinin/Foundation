@@ -3,6 +3,7 @@
 import { Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
 
 type SearchesMetadata = {
+    id: number;
     title: string;
 }
 
@@ -15,8 +16,8 @@ export default function AdminSearchesMetadataListClient({searches}: {searches: S
             </TableRow>
         </TableHead>
         <TableBody>
-            {searches.map((item: { title: string; }) => (
-                <TableRow key={item.title}>
+            {searches.map((item) => (
+                <TableRow key={item.id}>
                     <TableCell align="center">{item.title}</TableCell>
                     <TableCell align="center">TODO</TableCell>
                 </TableRow>

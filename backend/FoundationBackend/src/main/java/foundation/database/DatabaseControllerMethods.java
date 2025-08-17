@@ -38,14 +38,15 @@ class DatabaseControllerMethods {
 
     public static List<SearchMetadata> getSearchesMetadataByUsername(Connection connection, String username) throws SQLException {
         PreparedStatement preparedStatement = connection.prepareStatement(
-                "SELECT searches.title as title, searches.created_at as created_at FROM foundation.searches as searches WHERE searches.owner_username = ?");
+                "SELECT searches.id as id, searches.title as title, searches.created_at as created_at FROM foundation.searches as searches WHERE searches.owner_username = ?");
         preparedStatement.setString(1, username);
 
         List<SearchMetadata> searchMetadataList = new ArrayList<>();
         try (ResultSet resultSet = preparedStatement.executeQuery()){
             while (resultSet.next()) {
+                int id = resultSet.getInt("id");
                 String title = resultSet.getString("title");
-                searchMetadataList.add(new SearchMetadata(title));
+                searchMetadataList.add(new SearchMetadata(id, title));
             }
         }
 
@@ -145,7 +146,7 @@ class DatabaseControllerMethods {
             if (resultSet.next()) {
                 String title = resultSet.getString("title");
                 String description = resultSet.getString("description");
-                String createdAt = resultSet.getString("created_at");
+                Timestamp createdAt = resultSet.getTimestamp("created_at");
                 String ownerUsername = resultSet.getString("owner_username");
 
                 return new Search(id, title, description, createdAt, ownerUsername);
@@ -161,6 +162,17 @@ class DatabaseControllerMethods {
         preparedStatement.setString(1, search.title());
         preparedStatement.setString(2, search.description());
         preparedStatement.setInt(3, search.id());
+
+        preparedStatement.executeUpdate();
+    }
+
+    public static void createSearch(Connection connection, Search search) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "INSERT INTO foundation.searches (title, description, created_at, owner_username) VALUES (?, ?, ?, ?)");
+        preparedStatement.setString(1, search.title());
+        preparedStatement.setString(2, search.description());
+        preparedStatement.setTimestamp(3, search.created_at());
+        preparedStatement.setString(4, search.owner_username());
 
         preparedStatement.executeUpdate();
     }

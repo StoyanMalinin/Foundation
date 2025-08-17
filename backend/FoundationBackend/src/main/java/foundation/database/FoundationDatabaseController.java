@@ -19,4 +19,5 @@ public interface FoundationDatabaseController {
     void deleteRefreshToken(String token) throws SQLException;
     Search getSearchById(int id) throws SQLException;
     void updateSearch(Search search) throws SQLException;
+    void createSearch(Search search) throws SQLException;
 }

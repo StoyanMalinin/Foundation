@@ -89,6 +89,13 @@ public class PostgresFoundationDatabase implements FoundationDatabaseController 
         }
     }
 
+    @Override
+    public void createSearch(Search search) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseControllerMethods.createSearch(connection, search);
+        }
+    }
+
     public PostgresFoundationDatabaseTransaction createTransaction() throws SQLException {
         Connection connection = dataSource.getConnection();
         connection.setAutoCommit(false);

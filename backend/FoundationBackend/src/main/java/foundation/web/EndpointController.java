@@ -121,7 +121,7 @@ public class EndpointController {
             return true;
         }
 
-        List<SearchMetadata> searchMetadataList = null;
+        List<SearchMetadata> searchMetadataList;
         try {
             searchMetadataList = dbController.getSearchesMetadataByUsername(username);
         } catch (SQLException e) {
@@ -595,6 +595,55 @@ public class EndpointController {
         response.getHeaders().put("Content-Type", "application/json");
         Content.Sink.write(response, true, json, callback);
 
+        return true;
+    }
+
+    public boolean handleCreateSearch(Request request, Response response, Callback callback) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+        Gson gson = new Gson();
+        Search searchData = gson.fromJson(reader, Search.class);
+
+        List<HttpCookie> cookies = Request.getCookies(request);
+        HttpCookie jwtCookie = cookies.stream()
+                .filter(cookie -> "jwt".equals(cookie.getName()))
+                .findFirst()
+                .orElse(null);
+        if (jwtCookie == null) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - no JWT provided", callback);
+
+            return true;
+        }
+
+        String username;
+        try {
+            username = tokenManager.getUsernameFromToken(jwtCookie.getValue());
+        } catch (JWTVerificationException e) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - invalid JWT: " + e.getMessage(), callback);
+
+            return true;
+        }
+
+        Search newSearch = new Search(
+                0, // ID will be set by the database
+                searchData.title(),
+                searchData.description(),
+                Timestamp.from(Instant.now()),
+                username
+        );
+
+        try {
+            dbController.createSearch(newSearch);
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not create search: " + e.getMessage(), callback);
+
+            return true;
+        }
+
+        response.setStatus(201);
+        callback.succeeded();
         return true;
     }
 }

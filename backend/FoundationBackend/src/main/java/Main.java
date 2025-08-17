@@ -88,7 +88,7 @@ public class Main {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) {
                             HandlerFunction fn = controller::handleMapTileImage;
-                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                            fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("GET")
                             );
@@ -103,7 +103,7 @@ public class Main {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
                             HandlerFunction fn = controller::handleGetAdminSearchesMetadata;
-                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                            fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     new EnsureHTTPMethodMiddleware("GET")
                             );
@@ -118,7 +118,7 @@ public class Main {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
                             HandlerFunction fn = controller::handleLogin;
-                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                            fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("POST")
                             );
@@ -133,7 +133,7 @@ public class Main {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
                             HandlerFunction fn = controller::handleRegister;
-                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                            fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("POST")
                             );
@@ -148,7 +148,7 @@ public class Main {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
                             HandlerFunction fn = controller::handleLogout;
-                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                            fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("POST")
                             );
@@ -163,7 +163,7 @@ public class Main {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
                             HandlerFunction fn = controller::handleRefreshJWT;
-                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                            fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("POST")
                             );
@@ -179,7 +179,7 @@ public class Main {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
                             HandlerFunction fn = controller::handleCheckAuth;
-                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                            fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("GET")
                             );
@@ -195,7 +195,7 @@ public class Main {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
                             HandlerFunction fn = controller::handleWhoAmI;
-                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                            fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("GET")
                             );
@@ -211,7 +211,23 @@ public class Main {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
                             HandlerFunction fn = controller::handleUpdateSearch;
-                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                            fn = MiddlewareUtils.applyMiddleware(
+                                    fn,
+                                    browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("PUT")
+                            );
+
+                            return fn.apply(request, response, callback);
+                        }
+                    }
+            );
+
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/create-search"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            HandlerFunction fn = controller::handleCreateSearch;
+                            fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     browserPreHandlerMiddleware, new EnsureHTTPMethodMiddleware("PUT")
                             );
@@ -227,7 +243,7 @@ public class Main {
                         @Override
                         public boolean handle(Request request, Response response, Callback callback) throws Exception {
                             HandlerFunction fn = controller::handleGetSearchById;
-                            fn = MiddlewareUtils.applyPreHandlerMiddleware(
+                            fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     new EnsureHTTPMethodMiddleware("GET")
                             );

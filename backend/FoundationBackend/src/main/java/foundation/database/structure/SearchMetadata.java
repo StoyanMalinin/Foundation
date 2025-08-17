@@ -1,3 +1,3 @@
 package foundation.database.structure;
 
-public record SearchMetadata(String title) {}
+public record SearchMetadata(int id, String title) {}
