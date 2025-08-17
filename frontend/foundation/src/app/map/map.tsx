@@ -5,6 +5,7 @@ import { boundingBoxToTileGrids } from './map-utils'
 import MapTile from './map-tile';
 
 type MapProps = {
+    searchId: number,
     lat: [number, number],
     lon: [number, number],
     drawWidth: number,
@@ -43,7 +44,7 @@ export default function Map(props: MapProps) {
 
             return grid.grid.map(line =>
                 line.map(tile =>
-                    <MapTile key={`map-tile-${tile.z}-${tile.x}-${tile.y}-${grid.boundingBox.lat[0]}`} canvasCtx={canvasCtx} tile={tile} lat={props.lat} lon={grid.boundingBox.lon} drawWidth={drawWidth} drawHeight={props.drawHeight} drawWidthOffset={drawWidthOffset} />
+                    <MapTile key={`map-tile-${tile.z}-${tile.x}-${tile.y}-${grid.boundingBox.lat[0]}`} canvasCtx={canvasCtx} tile={tile} lat={props.lat} lon={grid.boundingBox.lon} drawWidth={drawWidth} drawHeight={props.drawHeight} drawWidthOffset={drawWidthOffset} searchId={props.searchId} />
                 )
             )
         })

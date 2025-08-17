@@ -29,6 +29,7 @@ export default function AdminSearchesMetadataListClient({searches}: {searches: S
                         }}>
                         <ViewButton searchId={item.id} />
                         <UpdateButton searchId={item.id} />
+                        <MapButton searchId={item.id} />
                     </TableCell>
                 </TableRow>
             ))}
@@ -52,6 +53,16 @@ function ViewButton({searchId}: {searchId: number}) {
     return (
         <Button variant="contained" onClick={() => router.push(`/dashboard/search/view?id=${searchId}`)}>
             View
+        </Button>
+    );
+}
+
+function MapButton({searchId}: {searchId: number}) {
+    const router = useRouter();
+
+    return (
+        <Button variant="contained" onClick={() => router.push(`/map?id=${searchId}`)}>
+            Map
         </Button>
     );
 }

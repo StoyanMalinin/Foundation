@@ -283,24 +283,24 @@ public class EndpointController {
             return true;
         }
 
-        RefreshToken refreshToken;
-        try {
-            refreshToken = dbController.getRefreshToken(refreshTokenCookie.getValue());
-        } catch (SQLException e) {
-            response.setStatus(500);
-            Content.Sink.write(response, true, "Internal server error - could not get refresh token: " + e.getMessage(), callback);
-            return true;
-        }
-
-        if (refreshToken == null) {
-            response.setStatus(401);
-            Content.Sink.write(response, true, "Unauthorized - invalid or missing refresh token", callback);
-
-            callback.succeeded();
-            return true;
-        }
-
         try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
+            RefreshToken refreshToken;
+            try {
+                refreshToken = tx.getRefreshToken(refreshTokenCookie.getValue());
+            } catch (SQLException e) {
+                response.setStatus(500);
+                Content.Sink.write(response, true, "Internal server error - could not get refresh token: " + e.getMessage(), callback);
+                return true;
+            }
+
+            if (refreshToken == null) {
+                response.setStatus(401);
+                Content.Sink.write(response, true, "Unauthorized - invalid or missing refresh token", callback);
+
+                callback.succeeded();
+                return true;
+            }
+
             if (refreshToken.expiresAt().before(Timestamp.from(Instant.now()))) {
                 try {
                     tx.deleteRefreshToken(refreshToken.token());
@@ -314,7 +314,6 @@ public class EndpointController {
                 response.setStatus(401);
                 Content.Sink.write(response, true, "Unauthorized - refresh token has expired", callback);
 
-                callback.succeeded();
                 return true;
             }
 
@@ -356,13 +355,10 @@ public class EndpointController {
 
         String username;
         try {
-            String refreshTokenValue = refreshTokenCookie.getValue();
-            RefreshToken refreshToken = dbController.getRefreshToken(refreshTokenValue);
+            RefreshToken refreshToken = dbController.getRefreshToken(refreshTokenCookie.getValue());
             if (refreshToken == null || refreshToken.expiresAt().before(Timestamp.from(Instant.now()))) {
                 response.setStatus(401);
                 Content.Sink.write(response, true, "Unauthorized - invalid or expired refresh token", callback);
-
-                callback.succeeded();
                 return true;
             }
 
@@ -370,7 +366,6 @@ public class EndpointController {
         } catch (SQLException e) {
             response.setStatus(500);
             Content.Sink.write(response, true, "Internal server error - could not get refresh token: " + e.getMessage(), callback);
-
             return true;
         }
 

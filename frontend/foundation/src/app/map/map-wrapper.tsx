@@ -6,6 +6,7 @@ import { LatLon, recalculateAndNormalizeBoundingBox, normalizeBoundingBox } from
 import Button from '@mui/material/Button';
 
 type MapWrapperProps = {
+  searchId: number,
   divRef: React.RefObject<HTMLDivElement>,
   canvasRef: React.RefObject<HTMLCanvasElement>,
 }
@@ -92,7 +93,7 @@ export default function MapWrapper(props: MapWrapperProps) {
     }
 
     return <>
-        <Map lat={latLon.lat} lon={latLon.lon} drawWidth={size[0]} drawHeight={size[1]} canvasRef={props.canvasRef} />
+        <Map lat={latLon.lat} lon={latLon.lon} drawWidth={size[0]} drawHeight={size[1]} searchId={props.searchId} canvasRef={props.canvasRef} />
         <Button onClick={() => setLatLon({lat: [-80, +80], lon: [-170, +170]})}>Reset</Button>
         <Button onClick={() => setLatLon(recalculateAndNormalizeBoundingBox(2, latLon.lat, latLon.lon, [0.5, 0.5]))}>-</Button>
         <Button onClick={() => setLatLon(recalculateAndNormalizeBoundingBox(0.5, latLon.lat, latLon.lon, [0.5, 0.5]))}>+</Button>

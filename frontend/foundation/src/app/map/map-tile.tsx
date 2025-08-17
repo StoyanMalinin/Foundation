@@ -5,6 +5,8 @@ import * as tomtom from './tomtom-map-utils'
 import { Tile } from "./map-utils";
 
 type MapTileProps = {
+    searchId: number,
+
     canvasCtx: CanvasRenderingContext2D,
     tile: Tile,
 
@@ -21,7 +23,7 @@ export default function MapTile(props: MapTileProps) {
 
     useEffect(() => {
         const f = async function() {
-            const img = await fetchMapTile(props.tile);
+            const img = await fetchMapTile(props.tile, props.searchId);
             setImage(img);
         };
 
@@ -70,15 +72,15 @@ export default function MapTile(props: MapTileProps) {
 
 const tileCache: Record<string, Promise<HTMLImageElement>> = {};
 
-async function fetchMapTile(t: Tile): Promise<HTMLImageElement> {
-    const key = `${t.z},${t.x},${t.y}`;
-    
+async function fetchMapTile(t: Tile, searchId: number): Promise<HTMLImageElement> {
+    const key = `${t.z},${t.x},${t.y},${searchId}`;
+
     if (tileCache[key] !== undefined) {
         return tileCache[key];
     }
     
     console.time(`fetchMapTile ${key}`);
-    var url = `https://localhost:6969/map-tile?searchId=${1}&z=${t.z}&x=${t.x}&y=${t.y}`;
+    var url = `https://localhost:6969/map-tile?searchId=${searchId}&z=${t.z}&x=${t.x}&y=${t.y}`;
     tileCache[key] = fetch(url).then(response => {
         console.timeEnd(`fetchMapTile ${key}`);
         if (response.status == 200) {
