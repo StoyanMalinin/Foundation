@@ -26,4 +26,4 @@ export default function AuthWrapper({children}: {children: React.ReactNode}) {
     if (isAuthenticated === null) return <>Loading...</>;
     else if (isAuthenticated) return <>{children}</>;
     else return <></>
-}``
+}
