@@ -176,4 +176,28 @@ class DatabaseControllerMethods {
 
         preparedStatement.executeUpdate();
     }
+
+    public static void deleteSearch(Connection connection, int searchId) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "DELETE FROM foundation.searches WHERE id = ?");
+        preparedStatement.setInt(1, searchId);
+        preparedStatement.executeUpdate();
+    }
+
+    public static void deleteSearchPresenceAssociations(Connection connection, int searchId) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "DELETE FROM foundation.search_to_presence WHERE search_id = ?");
+        preparedStatement.setInt(1, searchId);
+        preparedStatement.executeUpdate();
+    }
+
+    public static void deletePresencesWithoutSearch(Connection connection) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "DELETE FROM foundation.presences AS p WHERE p.id IN (" +
+                        "SELECT presences.id FROM foundation.presences AS presences LEFT JOIN foundation.search_to_presence as search_to_presence " +
+                            "ON search_to_presence.presence_id = presences.id " +
+                            "WHERE search_to_presence.presence_id IS NULL" +
+                        ")");
+        preparedStatement.executeUpdate();
+    }
 }

@@ -20,4 +20,7 @@ public interface FoundationDatabaseController {
     Search getSearchById(int id) throws SQLException;
     void updateSearch(Search search) throws SQLException;
     void createSearch(Search search) throws SQLException;
+    void deleteSearch(int searchId) throws SQLException;
+    void deleteSearchPresenceAssociations(int searchId) throws SQLException;
+    void deletePresencesWithoutSearch() throws SQLException;
 }

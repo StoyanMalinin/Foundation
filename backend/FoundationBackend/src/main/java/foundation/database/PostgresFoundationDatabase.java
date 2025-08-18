@@ -5,7 +5,6 @@ import java.sql.*;
 import foundation.database.structure.*;
 
 import javax.sql.DataSource;
-import java.util.ArrayList;
 import java.util.List;
 
 public class PostgresFoundationDatabase implements FoundationDatabaseController {
@@ -93,6 +92,27 @@ public class PostgresFoundationDatabase implements FoundationDatabaseController 
     public void createSearch(Search search) throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             DatabaseControllerMethods.createSearch(connection, search);
+        }
+    }
+
+    @Override
+    public void deleteSearch(int searchId) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseControllerMethods.deleteSearch(connection, searchId);
+        }
+    }
+
+    @Override
+    public void deleteSearchPresenceAssociations(int searchId) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseControllerMethods.deleteSearchPresenceAssociations(connection, searchId);
+        }
+    }
+
+    @Override
+    public void deletePresencesWithoutSearch() throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseControllerMethods.deletePresencesWithoutSearch(connection);
         }
     }
 

@@ -641,4 +641,57 @@ public class EndpointController {
         callback.succeeded();
         return true;
     }
+
+    public boolean handleDeleteSearch(Request request, Response response, Callback callback) {
+        int searchId;
+        Fields queryParams = null;
+        try {
+            queryParams = Request.getParameters(request);
+            searchId = Integer.parseInt(queryParams.getValue("id"));
+        } catch (Exception e) {
+            response.setStatus(400);
+            Content.Sink.write(response, true, "Bad request - invalid search ID", callback);
+
+            return true;
+        }
+
+        String username;
+        try {
+            username = getActorUsername(request);
+        } catch (JWTVerificationException e) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - invalid JWT: " + e.getMessage(), callback);
+
+            return true;
+        }
+
+        try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
+            Search search = tx.getSearchById(searchId);
+            if (search == null) {
+                response.setStatus(404);
+                Content.Sink.write(response, true, "Not found - search with this ID does not exist", callback);
+
+                return true;
+            }
+            if (!search.owner_username().equals(username)) {
+                response.setStatus(403);
+                Content.Sink.write(response, true, "Forbidden - you are not the owner of this search", callback);
+
+                return true;
+            }
+
+            tx.deleteSearchPresenceAssociations(searchId);
+            tx.deletePresencesWithoutSearch();
+            tx.deleteSearch(searchId);
+        } catch (Exception e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not get search: " + e.getMessage(), callback);
+
+            return true;
+        }
+
+        response.setStatus(204);
+        callback.succeeded();
+        return true;
+    }
 }

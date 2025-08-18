@@ -253,6 +253,22 @@ public class Main {
                     }
             );
 
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/delete-search"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            HandlerFunction fn = controller::handleDeleteSearch;
+                            fn = MiddlewareUtils.applyMiddleware(
+                                    fn,
+                                    new EnsureHTTPMethodMiddleware("DELETE")
+                            );
+
+                            return fn.apply(request, response, callback);
+                        }
+                    }
+            );
+
             server.setHandler(pathMappingsHandler);
 
             server.start();

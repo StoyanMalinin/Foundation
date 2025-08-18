@@ -72,6 +72,21 @@ public class PostgresFoundationDatabaseTransaction implements FoundationDatabase
     }
 
     @Override
+    public void deleteSearch(int searchId) throws SQLException {
+        DatabaseControllerMethods.deleteSearch(connection, searchId);
+    }
+
+    @Override
+    public void deleteSearchPresenceAssociations(int searchId) throws SQLException {
+        DatabaseControllerMethods.deleteSearchPresenceAssociations(connection, searchId);
+    }
+
+    @Override
+    public void deletePresencesWithoutSearch() throws SQLException {
+        DatabaseControllerMethods.deletePresencesWithoutSearch(connection);
+    }
+
+    @Override
     public void close() throws Exception {
         connection.commit();
         connection.close();
