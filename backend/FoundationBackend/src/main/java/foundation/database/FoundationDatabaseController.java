@@ -7,11 +7,8 @@ import java.util.List;
 
 public interface FoundationDatabaseController {
     List<Presence> getAllPresencesOfSearchInsideBoundingBox(int searchId, double minX, double maxX, double minY, double maxY) throws SQLException;
-
     List<SearchMetadata> getSearchesMetadataByUsername(String username) throws SQLException;
-
     User getUserByUsername(String username) throws SQLException;
-
     void createUser(User user) throws SQLException;
     void createRefreshToken(RefreshToken refreshToken) throws SQLException;
     RefreshToken getRefreshToken(String token) throws SQLException;
@@ -23,4 +20,5 @@ public interface FoundationDatabaseController {
     void deleteSearch(int searchId) throws SQLException;
     void deleteSearchPresenceAssociations(int searchId) throws SQLException;
     void deletePresencesWithoutSearch() throws SQLException;
+    List<SearchMetadata> getSearchesMetadata() throws SQLException;
 }

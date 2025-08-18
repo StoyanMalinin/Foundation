@@ -707,4 +707,25 @@ public class EndpointController {
         callback.succeeded();
         return true;
     }
+
+    public boolean handleGetSearchesMetadata(Request request, Response response, Callback callback) {
+        List<SearchMetadata> searchMetadataList;
+        try {
+            searchMetadataList = dbController.getSearchesMetadata();
+        } catch (SQLException e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not get searches metadata: " + e.getMessage(), callback);
+
+            return true;
+        }
+
+        Gson gson = new Gson();
+        String json = gson.toJson(searchMetadataList);
+
+        response.setStatus(200);
+        response.getHeaders().put("Content-Type", "application/json");
+        Content.Sink.write(response, true, json, callback);
+
+        return true;
+    }
 }

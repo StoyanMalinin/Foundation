@@ -200,4 +200,20 @@ class DatabaseControllerMethods {
                         ")");
         preparedStatement.executeUpdate();
     }
+
+    public static List<SearchMetadata> getSearchesMetadata(Connection connection) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "SELECT searches.id as id, searches.title as title, searches.created_at as created_at FROM foundation.searches as searches");
+
+        List<SearchMetadata> searchMetadataList = new ArrayList<>();
+        try (ResultSet resultSet = preparedStatement.executeQuery()){
+            while (resultSet.next()) {
+                int id = resultSet.getInt("id");
+                String title = resultSet.getString("title");
+                searchMetadataList.add(new SearchMetadata(id, title));
+            }
+        }
+
+        return searchMetadataList;
+    }
 }

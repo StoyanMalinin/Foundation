@@ -87,6 +87,11 @@ public class PostgresFoundationDatabaseTransaction implements FoundationDatabase
     }
 
     @Override
+    public List<SearchMetadata> getSearchesMetadata() throws SQLException {
+        return DatabaseControllerMethods.getSearchesMetadata(connection);
+    }
+
+    @Override
     public void close() throws Exception {
         connection.commit();
         connection.close();

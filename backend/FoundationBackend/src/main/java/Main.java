@@ -113,6 +113,21 @@ public class Main {
                     });
 
             pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/searches-metadata"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            HandlerFunction fn = controller::handleGetSearchesMetadata;
+                            fn = MiddlewareUtils.applyMiddleware(
+                                    fn,
+                                    new EnsureHTTPMethodMiddleware("GET")
+                            );
+
+                            return fn.apply(request, response, callback);
+                        }
+                    });
+
+            pathMappingsHandler.addMapping(
                     new ServletPathSpec("/login"),
                     new Handler.Abstract() {
                         @Override
