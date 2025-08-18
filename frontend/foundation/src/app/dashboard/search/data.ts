@@ -4,3 +4,8 @@ export type Search = {
     description: string;
     created_at: number; // Assuming createdAt is a timestamp
 }
+
+export type SearchesMetadata = {
+    id: number;
+    title: string;
+}

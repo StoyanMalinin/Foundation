@@ -4,15 +4,17 @@ import { Button, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/m
 import { useRouter } from "next/navigation";
 import {useState} from "react";
 import {DeleteModal} from "@/app/dashboard/search/delete/delete-modal";
+import {SearchesMetadata} from "./data"
 
-type SearchesMetadata = {
-    id: number;
-    title: string;
-}
-
-export default function AdminSearchesMetadataListClient({searches}: {searches: SearchesMetadata[]}) {
+export default function SearchesMetadataListClient({searches, adminSearches}: {
+    searches: SearchesMetadata[],
+    adminSearches: SearchesMetadata[],
+}) {
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const [searchToDelete, setSearchToDelete] = useState<SearchesMetadata | null>(null);
+
+    console.log("searches", searches);
+    const adminSearchesIds = new Set(adminSearches.map(search => search.id));
 
     return <>
         <DeleteModal isOpen={deleteModalOpen} setIsOpen={setDeleteModalOpen}
@@ -37,8 +39,9 @@ export default function AdminSearchesMetadataListClient({searches}: {searches: S
                                 justifyContent: 'center',
                             }}>
                             <ViewButton searchId={item.id} />
-                            <UpdateButton searchId={item.id} />
-                            <DeleteButton search={item} setSearchToDelete={setSearchToDelete} setDeleteModalOpen={setDeleteModalOpen} />
+                            {adminSearchesIds.has(item.id) && <UpdateButton searchId={item.id}/>}
+                            {adminSearchesIds.has(item.id) && <DeleteButton search={item} setSearchToDelete={setSearchToDelete}
+                                           setDeleteModalOpen={setDeleteModalOpen}/>}
                             <MapButton searchId={item.id} />
                         </TableCell>
                     </TableRow>
