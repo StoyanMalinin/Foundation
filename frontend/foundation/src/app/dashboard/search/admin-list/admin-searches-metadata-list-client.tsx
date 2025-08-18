@@ -1,7 +1,9 @@
 "use client";
 
 import { Button, Table, TableBody, TableCell, TableHead, TableRow } from "@mui/material";
-import { redirect, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
+import {useState} from "react";
+import {DeleteModal} from "@/app/dashboard/search/delete/delete-modal";
 
 type SearchesMetadata = {
     id: number;
@@ -9,32 +11,41 @@ type SearchesMetadata = {
 }
 
 export default function AdminSearchesMetadataListClient({searches}: {searches: SearchesMetadata[]}) {
-    return <Table>
-        <TableHead>
-            <TableRow>
-                <TableCell align="center" sx={{borderBottom: '1px solid black'}}><b>Title</b></TableCell>
-                <TableCell align="center" sx={{borderBottom: '1px solid black'}}><b>Actions</b></TableCell>
-            </TableRow>
-        </TableHead>
-        <TableBody>
-            {searches.map((item) => (
-                <TableRow key={item.id}>
-                    <TableCell align="center">{item.title}</TableCell>
-                    <TableCell 
-                        align="center"
-                        sx={{
-                            display: 'flex',
-                            gap: '10px',
-                            justifyContent: 'center',
-                        }}>
-                        <ViewButton searchId={item.id} />
-                        <UpdateButton searchId={item.id} />
-                        <MapButton searchId={item.id} />
-                    </TableCell>
+    const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+    const [searchToDelete, setSearchToDelete] = useState<SearchesMetadata | null>(null);
+
+    return <>
+        <DeleteModal isOpen={deleteModalOpen} setIsOpen={setDeleteModalOpen}
+                     searchId={searchToDelete?.id ?? null} searchTitle={searchToDelete?.title ?? null}>
+        </DeleteModal>
+        <Table>
+            <TableHead>
+                <TableRow>
+                    <TableCell align="center" sx={{borderBottom: '1px solid black'}}><b>Title</b></TableCell>
+                    <TableCell align="center" sx={{borderBottom: '1px solid black'}}><b>Actions</b></TableCell>
                 </TableRow>
-            ))}
-        </TableBody>
-    </Table>
+            </TableHead>
+            <TableBody>
+                {searches.map((item) => (
+                    <TableRow key={item.id}>
+                        <TableCell align="center">{item.title}</TableCell>
+                        <TableCell
+                            align="center"
+                            sx={{
+                                display: 'flex',
+                                gap: '10px',
+                                justifyContent: 'center',
+                            }}>
+                            <ViewButton searchId={item.id} />
+                            <UpdateButton searchId={item.id} />
+                            <DeleteButton search={item} setSearchToDelete={setSearchToDelete} setDeleteModalOpen={setDeleteModalOpen} />
+                            <MapButton searchId={item.id} />
+                        </TableCell>
+                    </TableRow>
+                ))}
+            </TableBody>
+        </Table>
+    </>
 }
 
 function UpdateButton({searchId}: {searchId: number}) {
@@ -65,4 +76,18 @@ function MapButton({searchId}: {searchId: number}) {
             Map
         </Button>
     );
+}
+
+function DeleteButton({search, setDeleteModalOpen, setSearchToDelete}: {
+    search: SearchesMetadata,
+    setDeleteModalOpen: (arg0: boolean) => void,
+    setSearchToDelete: (arg0: SearchesMetadata | null) => void
+                      }) {
+
+    return <Button variant="contained" onClick={() => {
+        setDeleteModalOpen(true);
+        setSearchToDelete(search);
+    }}>
+        Delete
+    </Button>
 }

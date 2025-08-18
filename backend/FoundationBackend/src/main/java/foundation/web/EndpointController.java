@@ -112,7 +112,7 @@ public class EndpointController {
     public boolean handleGetAdminSearchesMetadata(Request request, Response response, Callback callback) {
         String username;
         try {
-            username = getActorUsername(request);
+            username = getActorUsernameFromHeader(request);
         } catch (JWTVerificationException e) {
             response.setStatus(401);
             Content.Sink.write(response, true, "Unauthorized - invalid JWT: " + e.getMessage(), callback);
@@ -141,7 +141,7 @@ public class EndpointController {
         return true;
     }
 
-    private String getActorUsername(Request request) {
+    private String getActorUsernameFromHeader(Request request) {
         String authHeader = request.getHeaders().get("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new JWTVerificationException("Authorization bearer header is missing");
@@ -149,6 +149,19 @@ public class EndpointController {
         String jwt = authHeader.substring(8, authHeader.length() - 1); // Remove "Bearer "" prefix and " suffix
 
         return tokenManager.getUsernameFromToken(jwt);
+    }
+
+    private String getActorUsernameFromCookie(Request request) {
+        List<HttpCookie> cookies = Request.getCookies(request);
+        HttpCookie jwtCookie = cookies.stream()
+                .filter(cookie -> "jwt".equals(cookie.getName()))
+                .findFirst()
+                .orElse(null);
+        if (jwtCookie == null) {
+            throw new JWTVerificationException("JWT cookie is missing");
+        }
+
+        return tokenManager.getUsernameFromToken(jwtCookie.getValue());
     }
 
     public boolean handleLogin(Request request, Response response, Callback callback) {
@@ -657,7 +670,7 @@ public class EndpointController {
 
         String username;
         try {
-            username = getActorUsername(request);
+            username = getActorUsernameFromHeader(request);
         } catch (JWTVerificationException e) {
             response.setStatus(401);
             Content.Sink.write(response, true, "Unauthorized - invalid JWT: " + e.getMessage(), callback);
