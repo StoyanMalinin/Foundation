@@ -48,7 +48,7 @@ public class TokenManager {
 
     private void ensureNotExpired(DecodedJWT jwt) {
         Instant now = Instant.now();
-        if (jwt.getExpiresAt() != null && !jwt.getExpiresAt().toInstant().isBefore(now)) {
+        if (jwt.getExpiresAt() == null || jwt.getExpiresAt().toInstant().isBefore(now)) {
             throw new JWTVerificationException("Token has expired");
         }
     }
