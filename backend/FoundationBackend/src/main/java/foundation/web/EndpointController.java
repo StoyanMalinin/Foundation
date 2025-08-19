@@ -3,15 +3,13 @@ package foundation.web;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.annotations.SerializedName;
 import foundation.auth.LoginFormData;
 import foundation.auth.RegisterFormData;
 import foundation.auth.TokenManager;
 import foundation.database.PostgresFoundationDatabase;
 import foundation.database.PostgresFoundationDatabaseTransaction;
-import foundation.database.structure.RefreshToken;
-import foundation.database.structure.Search;
-import foundation.database.structure.SearchMetadata;
-import foundation.database.structure.User;
+import foundation.database.structure.*;
 import foundation.map.MapImageColorizer;
 import foundation.map.MapImageGetter;
 import foundation.map.tomtom.TileGridUtils;
@@ -30,12 +28,14 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public class EndpointController {
+    private static final int MAX_PRESENCES_PER_MINUTE = 5;
+
     private MapImageGetter mapImageGetter;
     private MapImageColorizer mapImageColorizer;
     private PostgresFoundationDatabase dbController;
@@ -728,4 +728,92 @@ public class EndpointController {
 
         return true;
     }
+
+    public boolean handleInjectPresences(Request request, Response response, Callback callback) {
+        Gson gson = new Gson();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+        InjectPresencesRequest injectPresencesRequest = gson.fromJson(reader, InjectPresencesRequest.class);
+
+        String username;
+        try {
+            username = tokenManager.getUsernameFromToken(injectPresencesRequest.jwt());
+        } catch (JWTVerificationException e) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - invalid JWT: " + e.getMessage(), callback);
+            return true;
+        }
+
+        Arrays.sort(injectPresencesRequest.presences(), Comparator.comparingLong(Presence::recordedAt));
+
+        try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
+            List<RateLimiterPresence> existingPresences = tx.getRateLimiterPresencesForUser(username);
+
+            if (!existingPresences.isEmpty() &&
+                    existingPresences.get(existingPresences.size() - 1).presence().timestamp() > injectPresencesRequest.presences()[0].recordedAt()) {
+                response.setStatus(400);
+                Content.Sink.write(response, true, "Bad request - presences are not in chronological order", callback);
+
+                tx.rollback();
+                return true;
+            }
+
+            ArrayList<foundation.database.structure.Presence> newPresences = new ArrayList<>(
+                    Arrays.stream(injectPresencesRequest.presences()).map(p -> new foundation.database.structure.Presence(
+                            p.recordedAt(), p.lat(), p.lon()
+                    )).toList()
+            );
+
+            ArrayList<foundation.database.structure.Presence> allPresences = new ArrayList<>(existingPresences.stream().map(RateLimiterPresence::presence).toList());
+            allPresences.addAll(newPresences);
+
+            int ptr = 0;
+            for (int i = 0; i < allPresences.size(); i++) {
+                if (ptr < i) ptr = i;
+                while (ptr + 1 < allPresences.size() && Duration.ofMillis(allPresences.get(ptr + 1).timestamp() - allPresences.get(i).timestamp()).toMinutes() < 1) {
+                    ptr++;
+                }
+
+                if (ptr - i + 1 > MAX_PRESENCES_PER_MINUTE) {
+                    response.setStatus(400);
+                    Content.Sink.write(response, true, "Bad request - too many presences in a row for the same time", callback);
+
+                    tx.rollback();
+                    return true;
+                }
+                if (i + 1 < allPresences.size() && allPresences.get(i).distanceTo(allPresences.get(i+1)) > 0.0001) {
+                    response.setStatus(400);
+                    Content.Sink.write(response, true, "Bad request - presences are too far from each other", callback);
+
+                    tx.rollback();
+                    return true;
+                }
+            }
+
+            tx.deleteRateLimiterPresencesForUser(username);
+            tx.insertRateLimiterPresences(username, newPresences);
+
+            List<Long> presenceIds = tx.insertPresences(newPresences);
+            tx.linkSearchesAndPresences(injectPresencesRequest.searchIds(), presenceIds);
+        } catch (Exception e) {
+            response.setStatus(500);
+            Content.Sink.write(response, true, "Internal server error - could not inject presences: " + e.getMessage(), callback);
+            return true;
+        }
+
+        response.setStatus(204);
+        callback.succeeded();
+        return true;
+    }
 }
+
+record Presence (
+    @SerializedName("lat") double lat,
+    @SerializedName("lon") double lon,
+    @SerializedName("recorded_at") long recordedAt
+) {}
+
+record InjectPresencesRequest(
+        @SerializedName("search_ids") int[] searchIds,
+        @SerializedName("presences") Presence[] presences,
+        @SerializedName("jwt") String jwt
+) {}

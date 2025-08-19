@@ -2,6 +2,7 @@ package foundation.database;
 
 import foundation.database.structure.*;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.List;
 
@@ -21,4 +22,9 @@ public interface FoundationDatabaseController {
     void deleteSearchPresenceAssociations(int searchId) throws SQLException;
     void deletePresencesWithoutSearch() throws SQLException;
     List<SearchMetadata> getSearchesMetadata() throws SQLException;
+    List<RateLimiterPresence> getRateLimiterPresencesForUser(String username) throws SQLException;
+    void deleteRateLimiterPresencesForUser(String username) throws SQLException;
+    void insertRateLimiterPresences(String username, List<Presence> presences) throws SQLException;
+    List<Long> insertPresences(List<Presence> presences) throws SQLException;
+    void linkSearchesAndPresences(int[] searchIds, List<Long> presenceIds) throws SQLException;
 }

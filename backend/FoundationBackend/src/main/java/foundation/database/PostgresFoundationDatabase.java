@@ -9,7 +9,7 @@ import java.util.List;
 
 public class PostgresFoundationDatabase implements FoundationDatabaseController {
 
-    private DataSource dataSource;
+    private final DataSource dataSource;
 
     public PostgresFoundationDatabase(DataSource dataSource) throws SQLException {
         this.dataSource = dataSource;
@@ -120,6 +120,41 @@ public class PostgresFoundationDatabase implements FoundationDatabaseController 
     public List<SearchMetadata> getSearchesMetadata() throws SQLException {
         try (Connection connection = dataSource.getConnection()) {
             return DatabaseControllerMethods.getSearchesMetadata(connection);
+        }
+    }
+
+    @Override
+    public List<RateLimiterPresence> getRateLimiterPresencesForUser(String username) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            return DatabaseControllerMethods.getRateLimiterPresencesForUser(connection, username);
+        }
+    }
+
+    @Override
+    public void deleteRateLimiterPresencesForUser(String username) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseControllerMethods.deleteRateLimiterPresencesForUser(connection, username);
+        }
+    }
+
+    @Override
+    public void insertRateLimiterPresences(String username, List<Presence> presences) throws SQLException {
+        try (Connection conn = dataSource.getConnection()) {
+            DatabaseControllerMethods.insertRateLimiterPresences(conn, username, presences);
+        }
+    }
+
+    @Override
+    public List<Long> insertPresences(List<Presence> presences) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            return DatabaseControllerMethods.insertPresences(connection, presences);
+        }
+    }
+
+    @Override
+    public void linkSearchesAndPresences(int[] searchIds, List<Long> presenceIds) throws SQLException {
+        try (Connection connection = dataSource.getConnection()) {
+            DatabaseControllerMethods.linkSearchesAndPresences(connection, searchIds, presenceIds);
         }
     }
 

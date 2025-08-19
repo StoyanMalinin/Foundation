@@ -11,13 +11,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Date;
 
 public class TokenManager {
-    private final String secrtet;
     private final Algorithm algorithm;
     private final JWTVerifier verifier;
 
     public TokenManager(String secret) {
-        this.secrtet = secret;
-
         this.algorithm = Algorithm.HMAC256(secret);
         this.verifier = JWT.require(algorithm).build();
     }
@@ -32,7 +29,9 @@ public class TokenManager {
 
     public boolean verify(String token) {
         try {
-            verifier.verify(token);
+            DecodedJWT jwt = verifier.verify(token);
+            ensureNotExpired(jwt);
+
             return true;
         } catch (JWTVerificationException e) {
             // Token verification failed
@@ -42,12 +41,15 @@ public class TokenManager {
 
     public String getUsernameFromToken(String token) throws JWTVerificationException {
         DecodedJWT jwt = verifier.verify(token);
-
-        Instant now = Instant.now();
-        if (jwt.getExpiresAt() == null || jwt.getExpiresAt().toInstant().isBefore(now)) {
-            throw new JWTVerificationException("Token has expired");
-        }
+        ensureNotExpired(jwt);
 
         return jwt.getSubject();
+    }
+
+    private void ensureNotExpired(DecodedJWT jwt) {
+        Instant now = Instant.now();
+        if (jwt.getExpiresAt() != null && !jwt.getExpiresAt().toInstant().isBefore(now)) {
+            throw new JWTVerificationException("Token has expired");
+        }
     }
 }

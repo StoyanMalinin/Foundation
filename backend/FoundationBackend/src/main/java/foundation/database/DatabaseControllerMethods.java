@@ -3,6 +3,7 @@ package foundation.database;
 import foundation.database.structure.*;
 
 import java.sql.*;
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -215,5 +216,111 @@ class DatabaseControllerMethods {
         }
 
         return searchMetadataList;
+    }
+
+    public static List<RateLimiterPresence> getRateLimiterPresencesForUser(Connection connection, String username) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "SELECT username, st_x(presence) as x, st_y(presence) as y, recorded_at FROM foundation.rate_limiter_presences WHERE username = ?");
+        preparedStatement.setString(1, username);
+
+        List<RateLimiterPresence> rateLimiterPresences = new ArrayList<>();
+        try (ResultSet resultSet = preparedStatement.executeQuery()) {
+            while (resultSet.next()) {
+                String user = resultSet.getString("username");
+                double x = resultSet.getDouble("x"), y = resultSet.getDouble("y");
+                Timestamp recordedAt = resultSet.getTimestamp("recorded_at");
+                Presence presence = new Presence(recordedAt.getTime(), x, y);
+
+                rateLimiterPresences.add(new RateLimiterPresence(user, presence));
+            }
+        }
+
+        return rateLimiterPresences;
+    }
+
+    public static void deleteRateLimiterPresencesForUser(Connection connection, String username) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "DELETE FROM foundation.rate_limiter_presences WHERE username = ?");
+        preparedStatement.setString(1, username);
+        preparedStatement.executeUpdate();
+    }
+
+    public static void insertRateLimiterPresences(Connection connection, String username, List<Presence> presences) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "INSERT INTO foundation.rate_limiter_presences (username, presence, recorded_at) VALUES (?, st_point(?, ?), ?)");
+
+        int i = 0;
+        final int BATCH_SIZE = 500;
+        for (Presence presence : presences) {
+            preparedStatement.setString(1, username);
+            preparedStatement.setDouble(2, presence.x());
+            preparedStatement.setDouble(3, presence.y());
+            preparedStatement.setTimestamp(4, Timestamp.from(Instant.ofEpochMilli(presence.timestamp())));
+            preparedStatement.addBatch();
+
+            if ((i + 1) % BATCH_SIZE == 0 || (i + 1) == presences.size()) {
+                preparedStatement.executeBatch();
+                preparedStatement.clearBatch();
+            }
+
+            i++;
+        }
+    }
+
+    public static List<Long> insertPresences(Connection connection, List<Presence> presences) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "INSERT INTO foundation.presences (point, timestamp) VALUES (st_point(?, ?), ?)",
+                Statement.RETURN_GENERATED_KEYS);
+
+        ArrayList<Long> ids = new ArrayList<>();
+
+        int i = 0;
+        final int BATCH_SIZE = 500;
+        for (Presence presence : presences) {
+            preparedStatement.setDouble(1, presence.x());
+            preparedStatement.setDouble(2, presence.y());
+            preparedStatement.setLong(3, presence.timestamp());
+            preparedStatement.addBatch();
+
+            if ((i + 1) % BATCH_SIZE == 0 || (i + 1) == presences.size()) {
+                preparedStatement.executeBatch();
+
+                try (ResultSet rs = preparedStatement.getGeneratedKeys()) {
+                    while (rs.next()) {
+                        ids.add(rs.getLong(1));
+                    }
+                }
+
+                preparedStatement.clearBatch();
+            }
+
+            i++;
+        }
+
+        return ids;
+    }
+
+    public static void linkSearchesAndPresences(Connection connection, int[] searchIds, List<Long> presenceIds) throws SQLException {
+        PreparedStatement preparedStatement = connection.prepareStatement(
+                "INSERT INTO foundation.search_to_presence (search_id, presence_id) VALUES (?, ?)");
+
+        final int BATCH_SIZE = 500;
+        for (int searchId : searchIds) {
+            int i = 0;
+            for (long presenceId : presenceIds) {
+                preparedStatement.setInt(1, searchId);
+                preparedStatement.setLong(2, presenceId);
+                preparedStatement.addBatch();
+
+                if ((i + 1) % BATCH_SIZE == 0 || (i + 1) == presenceIds.size()) {
+                    preparedStatement.executeBatch();
+                    preparedStatement.clearBatch();
+                }
+
+                i++;
+            }
+        }
+
+        preparedStatement.executeBatch();
     }
 }

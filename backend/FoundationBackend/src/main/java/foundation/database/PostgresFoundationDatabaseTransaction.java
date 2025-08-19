@@ -92,6 +92,31 @@ public class PostgresFoundationDatabaseTransaction implements FoundationDatabase
     }
 
     @Override
+    public List<RateLimiterPresence> getRateLimiterPresencesForUser(String username) throws SQLException {
+        return DatabaseControllerMethods.getRateLimiterPresencesForUser(connection, username);
+    }
+
+    @Override
+    public void deleteRateLimiterPresencesForUser(String username) throws SQLException {
+        DatabaseControllerMethods.deleteRateLimiterPresencesForUser(connection, username);
+    }
+
+    @Override
+    public void insertRateLimiterPresences(String username, List<Presence> presences) throws SQLException {
+        DatabaseControllerMethods.insertRateLimiterPresences(connection, username, presences);
+    }
+
+    @Override
+    public List<Long> insertPresences(List<Presence> presences) throws SQLException {
+        return DatabaseControllerMethods.insertPresences(connection, presences);
+    }
+
+    @Override
+    public void linkSearchesAndPresences(int[] searchIds, List<Long> presenceIds) throws SQLException {
+        DatabaseControllerMethods.linkSearchesAndPresences(connection, searchIds, presenceIds);
+    }
+
+    @Override
     public void close() throws Exception {
         connection.commit();
         connection.close();

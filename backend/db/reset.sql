@@ -5,7 +5,7 @@ CREATE SCHEMA foundation;
 
 create table foundation.presences
 (
-    id        serial
+    id        bigserial
         constraint presences_pk
             primary key,
     point     geometry(Point),
@@ -43,7 +43,7 @@ alter table foundation.searches
 
 create table foundation.search_to_presence
 (
-    search_id   integer not null
+    search_id   bigint not null
         constraint search_to_presence_searches_id_fk
             references searches,
     presence_id integer not null
@@ -63,4 +63,16 @@ create table foundation.refresh_tokens (
 );
 
 alter table foundation.refresh_tokens
+    owner to postgres;
+
+create table foundation.rate_limiter_presences (
+    id bigserial primary key,
+    username varchar(255),
+    presence     geometry(Point),
+    recorded_at timestamp not null,
+
+    foreign key (username) references users(username)
+);
+
+alter table foundation.rate_limiter_presences
     owner to postgres;
