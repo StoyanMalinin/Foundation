@@ -50,6 +50,5 @@ async function createSearchAction(prevState: SearchFormState, formData: FormData
         };
     }
     
-    // Redirect to the search list or another appropriate page on successful creation
-    redirect('/dashboard/search/admin-list');
+    redirect('/dashboard/search/list');
 }
