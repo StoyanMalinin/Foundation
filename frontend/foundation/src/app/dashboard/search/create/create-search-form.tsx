@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { SearchForm, Search, SearchFormState } from "../form";
 import { redirect } from "next/navigation";
+import { Box } from "@mui/material";
 
 export default function CreateSearchForm() {
     const initialSearch: Search = {
@@ -17,10 +18,12 @@ export default function CreateSearchForm() {
     });
 
     return (
-        <>
-            <h1>Create Search</h1>
-            <SearchForm formAction={formAction} formState={formState} submitText="Create" />
-        </>
+        <Box sx={{display: "flex", justifyContent: "center"}}>
+            <Box>
+                <h1>Create Search</h1>
+                <SearchForm formAction={formAction} formState={formState} submitText="Create" />
+            </Box>
+        </Box>
     );
 }
 

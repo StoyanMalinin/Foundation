@@ -2,7 +2,7 @@
 
 import { useActionState } from "react";
 import {SearchForm, Search, SearchFormState} from "../form";
-import { cookies } from "next/dist/server/request/cookies";
+import { Box } from "@mui/material";
 
 export default function UpdateSearchForm({ search }: { search: Search }) {
     const [formState, formAction] = useActionState(updateSearchAction, {
@@ -11,10 +11,12 @@ export default function UpdateSearchForm({ search }: { search: Search }) {
     });
 
     return (
-        <>
-            <h1>Update Search</h1>
-            <SearchForm formAction={formAction} formState={formState} submitText="Update" />
-        </>
+        <Box sx={{display: "flex", justifyContent: "center"}}>
+            <Box>
+                <h1>Update Search</h1>
+                <SearchForm formAction={formAction} formState={formState} submitText="Update" />
+            </Box>
+        </Box>
     );
 }
 
