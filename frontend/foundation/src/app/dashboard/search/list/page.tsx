@@ -1,5 +1,5 @@
-import AuthWrapper from "@/app/auth/wrapper";
-import SearchesMetadataListServer from "@/app/dashboard/search/list/searches-metadata-list";
+import AuthWrapper from "../../../auth/wrapper";
+import SearchesMetadataListServer from "./searches-metadata-list-server";
 
 export default async function Page() {
     return <AuthWrapper>
