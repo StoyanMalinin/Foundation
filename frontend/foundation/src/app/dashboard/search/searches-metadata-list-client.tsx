@@ -13,7 +13,7 @@ export default function SearchesMetadataListClient({searches, adminSearches}: {
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const [searchToDelete, setSearchToDelete] = useState<SearchesMetadata | null>(null);
 
-    console.log("searches", searches);
+    searches = searches.sort((a, b) => a.title.localeCompare(b.title));
     const adminSearchesIds = new Set(adminSearches.map(search => search.id));
 
     return <>
