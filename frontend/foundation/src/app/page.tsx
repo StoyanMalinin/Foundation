@@ -1,5 +1,6 @@
 "use client";
 
+import { Box, Button, Link } from "@mui/material";
 import { useEffect, useState } from "react";
 
 type UserData = {
@@ -27,5 +28,16 @@ export default function Home() {
     fetchUserData();
   }, []);
 
-  return <h1>Hello, {userData == null ? "Guest" : `${userData.firstName} ${userData.lastName}`}</h1>;
+  const redirect = userData != null ? 
+    <Link href="/dashboard/search">
+      <Button variant="contained">Go to Dashboard</Button>
+    </Link> : 
+    <Link href="/auth/login">
+      <Button variant="contained">Login</Button>
+    </Link>;
+
+  return <Box>
+    <h1>Hello, {userData == null ? "Guest" : `${userData.firstName} ${userData.lastName}`}</h1>
+    {redirect}
+  </Box>;
 }

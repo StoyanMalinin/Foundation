@@ -1,10 +1,12 @@
 import AuthWrapper from "@/app/auth/wrapper";
 import DashboardSearch from "./dashboard-search";
+import { NavigationBar } from "@/app/navigation/navigation-bar";
 
 export default async function Page() {
   return (
     <AuthWrapper>
-      <DashboardSearch name="User" />
+      <NavigationBar />
+      <DashboardSearch/>
     </AuthWrapper>
   );
 }
