@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Input } from "@mui/material";
+import {Box, Button, Input, Paper} from "@mui/material";
 import { redirect } from "next/navigation";
 import Form from "next/form";
 import { useActionState } from "react";
@@ -17,18 +17,25 @@ export default function Register() {
     });
 
     const errorText = (<label style={{color: "red"}}>{formState.errorMessage}</label>)
-    return <Form action={formAction}>
-        <h2>Register</h2>
-        <Input name="username" placeholder="Username" defaultValue={formState.username} type="text" /><br></br>
-        <Input name="password" placeholder="Password" type="password" /><br></br>
-        <Input name="first_name" placeholder="First name" type="text" /><br></br>
-        <Input name="last_name" placeholder="Last name" type="text" /><br></br>
-        
-        <br></br>
-        <Button type="submit" variant="contained">Register</Button>
+    return <Box sx={{display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center"}}>
+        <Paper sx={{width: "250px"}}>
+            <Form action={formAction}>
+                <Box sx={{display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center"}}>
+                    <h2>Register</h2>
+                    <Input name="username" placeholder="Username" defaultValue={formState.username} type="text" /><br></br>
+                    <Input name="password" placeholder="Password" type="password" /><br></br>
+                    <Input name="first_name" placeholder="First name" type="text" /><br></br>
+                    <Input name="last_name" placeholder="Last name" type="text" /><br></br>
 
-        {formState.errorMessage != "" && <><br/><br/>{errorText}</>}
-    </Form>
+                    <br></br>
+                    <Button type="submit" variant="contained">Register</Button>
+                    <br/><br/>
+
+                    {formState.errorMessage != "" && <>{errorText}</>}
+                </Box>
+            </Form>
+        </Paper>
+    </Box>
 }
 
 async function registerAction(prevState: FormState, formData: FormData): Promise<FormState> {

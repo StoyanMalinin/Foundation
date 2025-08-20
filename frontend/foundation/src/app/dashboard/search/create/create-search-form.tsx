@@ -18,11 +18,9 @@ export default function CreateSearchForm() {
     });
 
     return (
-        <Box sx={{display: "flex", justifyContent: "center"}}>
-            <Box>
-                <h1>Create Search</h1>
-                <SearchForm formAction={formAction} formState={formState} submitText="Create" />
-            </Box>
+        <Box sx={{display: "flex", justifyContent: "center", flexDirection: "column", alignItems: "center"}}>
+            <h1>Create Search</h1>
+            <SearchForm formAction={formAction} formState={formState} submitText="Create" />
         </Box>
     );
 }
