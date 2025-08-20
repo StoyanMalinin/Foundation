@@ -1,9 +1,10 @@
 "use client";
 
-import { Button, Input } from "@mui/material";
+import {Button, Input, Typography} from "@mui/material";
 import { redirect } from "next/navigation";
 import Form from "next/form";
 import { useActionState } from "react";
+import Link from "next/link";
 
 type FormState = {
     username: string
@@ -17,16 +18,21 @@ export default function Login() {
     });
 
     const errorText = (<label style={{color: "red"}}>{formState.errorMessage}</label>)
-    return <Form action={formAction}>
-        <h2>Login</h2>
-        <Input name="username" placeholder="Username" defaultValue={formState.username} type="text" /><br></br>
-        <Input name="password" placeholder="Password" type="password" /><br></br>
-        
-        <br></br>
-        <Button type="submit" variant="contained">Login</Button>
+    return <>
+        <Form action={formAction}>
+            <h2>Login</h2>
+            <Input name="username" placeholder="Username" defaultValue={formState.username} type="text" /><br></br>
+            <Input name="password" placeholder="Password" type="password" /><br></br>
 
-        {formState.errorMessage != "" && <><br/><br/>{errorText}</>}
-    </Form>
+            <br></br>
+            <Button type="submit" variant="contained">Login</Button>
+
+            {formState.errorMessage != "" && <><br/><br/>{errorText}</>}
+        </Form><br></br>
+        <Typography>
+            {"Don't have an account?"} <Link href="/auth/register">Register</Link>
+        </Typography>
+    </>
 }
 
 async function loginAction(prevState: FormState, formData: FormData): Promise<FormState> {
