@@ -385,7 +385,7 @@ public class EndpointController {
         String jwt = tokenManager.generateToken(username);
         setAuthCookies(response, jwt, refreshTokenCookie.getValue());
 
-        response.setStatus(204);
+        response.setStatus(200);
 
         callback.succeeded();
         return true;

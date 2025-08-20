@@ -196,7 +196,7 @@ public class Main {
                             HandlerFunction fn = controller::handleCheckAuth;
                             fn = MiddlewareUtils.applyMiddleware(
                                     fn,
-                                    browserMiddleware, new EnsureHTTPMethodMiddleware("GET")
+                                    new EnsureHTTPMethodMiddleware("GET")
                             );
 
                             return fn.apply(request, response, callback);

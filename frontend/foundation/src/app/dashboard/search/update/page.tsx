@@ -1,10 +1,9 @@
-import AuthWrapper from "@/app/auth/wrapper";
 import UpdateSearch from "./update-search";
 import { NavigationBar } from "@/app/navigation/navigation-bar";
 
 export default async function Page({searchParams}) {
-    return <AuthWrapper>
+    return <>
         <NavigationBar />
         <UpdateSearch searchParams={searchParams} />
-    </AuthWrapper>
+    </>
 }

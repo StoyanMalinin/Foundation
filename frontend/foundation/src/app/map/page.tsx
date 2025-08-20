@@ -3,7 +3,6 @@
 import { useRef } from "react";
 import MapWrapper from "./map-wrapper";
 import { useSearchParams } from "next/navigation";
-import AuthWrapper from "../auth/wrapper";
 import { NavigationBar } from "../navigation/navigation-bar";
 
 export default function MapPage() {
@@ -15,12 +14,12 @@ export default function MapPage() {
     if (id == null) return <p>You should specify search ID</p>;
 
     return (
-        <AuthWrapper>
+        <>
             <NavigationBar />
             <div ref={divRef} key={"map-wrapper-key"} className="map-wrapper">
                 <canvas id="map-canvas" ref={canvasRef} style={{width: "100%", height: "100%", objectFit: "contain"}} />
                 <MapWrapper divRef={divRef} canvasRef={canvasRef} searchId={parseInt(id)} />
             </div>
-        </AuthWrapper>
+        </>
     );
 }
