@@ -7,6 +7,6 @@ backend/FoundationBackend/target/**
 *.iml
 out/**
 frontend/.idea/**
-
+backend/secrets/
 
 
