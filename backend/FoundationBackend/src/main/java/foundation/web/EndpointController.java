@@ -141,13 +141,17 @@ public class EndpointController {
         return true;
     }
 
-    private String getActorUsernameFromHeader(Request request) {
+    private String getAuthorizationHeaderValue(Request request) throws JWTVerificationException {
         String authHeader = request.getHeaders().get("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new JWTVerificationException("Authorization bearer header is missing");
         }
-        String jwt = authHeader.substring(8, authHeader.length() - 1); // Remove "Bearer "" prefix and " suffix
 
+        return authHeader.substring(8, authHeader.length() - 1); // Remove "Bearer "" prefix and " suffix
+    }
+
+    private String getActorUsernameFromHeader(Request request) {
+        String jwt = getAuthorizationHeaderValue(request);
         return tokenManager.getUsernameFromToken(jwt);
     }
 
@@ -165,11 +169,11 @@ public class EndpointController {
     }
 
     public boolean handleLogin(Request request, Response response, Callback callback) {
-        try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
-            Gson gson = new Gson();
-            LoginFormData loginFormData = gson.fromJson(reader, LoginFormData.class);
+        BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+        Gson gson = new Gson();
+        LoginFormData loginFormData = gson.fromJson(reader, LoginFormData.class);
 
+        try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
             User user;
             try {
                 user = tx.getUserByUsername(loginFormData.username());
@@ -211,24 +215,21 @@ public class EndpointController {
     }
 
     public boolean handleRegister(Request request, Response response, Callback callback) {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
+        Gson gson = new Gson();
+        RegisterFormData registerFormData = gson.fromJson(reader, RegisterFormData.class);
+        if (registerFormData.username() == null || registerFormData.password() == null) {
+            response.setStatus(400);
+            Content.Sink.write(response, true, "Bad request - username and password are required", callback);
+
+            return true;
+        }
+
+        String hashedPassword = BCrypt.hashpw(registerFormData.password(), BCrypt.gensalt());
+        User newUser = new User(registerFormData.username(), hashedPassword,
+                registerFormData.firstName(), registerFormData.lastName());
+
         try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
-            Gson gson = new Gson();
-            RegisterFormData registerFormData = gson.fromJson(reader, RegisterFormData.class);
-
-            if (registerFormData.username() == null || registerFormData.password() == null) {
-                response.setStatus(400);
-                Content.Sink.write(response, true, "Bad request - username and password are required", callback);
-
-                tx.rollback();
-                callback.succeeded();
-                return true;
-            }
-
-            String hashedPassword = BCrypt.hashpw(registerFormData.password(), BCrypt.gensalt());
-
-            User newUser = new User(registerFormData.username(), hashedPassword,
-                    registerFormData.firstName(), registerFormData.lastName());
             try {
                 tx.createUser(newUser);
             } catch (SQLException e) {
@@ -236,14 +237,13 @@ public class EndpointController {
                 Content.Sink.write(response, true, "Internal server error - could not add user: " + e.getMessage(), callback);
 
                 tx.rollback();
-                callback.succeeded();
                 return true;
             }
 
             createSuccessfulLoginResponse(tx, newUser.username(), response, callback);
         } catch (Exception e) {
             response.setStatus(500);
-            Content.Sink.write(response, true, "Internal server error - could not check if user exists: " + e.getMessage(), callback);
+            Content.Sink.write(response, true, "Internal server error - could not register: " + e.getMessage(), callback);
         }
 
         callback.succeeded();
@@ -283,16 +283,12 @@ public class EndpointController {
     }
 
     public boolean handleRefreshJWT(Request request, Response response, Callback callback) {
-        List<HttpCookie> cookies = Request.getCookies(request);
-        HttpCookie refreshTokenCookie = cookies.stream()
-                .filter(cookie -> "refresh_token".equals(cookie.getName()))
-                .findFirst()
-                .orElse(null);
-        if (refreshTokenCookie == null) {
+        String refreshTokenValue;
+        try {
+            refreshTokenValue = getAuthorizationHeaderValue(request);
+        } catch (JWTVerificationException e) {
             response.setStatus(401);
-            Content.Sink.write(response, true, "Unauthorized - no refresh token provided", callback);
-
-            callback.succeeded();
+            Content.Sink.write(response, true, "Unauthorized - " + e.getMessage(), callback);
             return true;
         }
 
