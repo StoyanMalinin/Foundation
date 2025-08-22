@@ -295,7 +295,7 @@ public class EndpointController {
         try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
             RefreshToken refreshToken;
             try {
-                refreshToken = tx.getRefreshToken(refreshTokenCookie.getValue());
+                refreshToken = tx.getRefreshToken(refreshTokenValue);
             } catch (SQLException e) {
                 response.setStatus(500);
                 Content.Sink.write(response, true, "Internal server error - could not get refresh token: " + e.getMessage(), callback);
