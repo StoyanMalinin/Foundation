@@ -23,7 +23,7 @@ public class EnsureHTTPMethodMiddleware implements Middleware {
         }
         if (!request.getMethod().equals(httpMethod)) {
             response.setStatus(405);
-            Content.Sink.write(response, true, "Method not allowed - only GET is allowed", callback);
+            Content.Sink.write(response, true, "Method not allowed - only " + httpMethod + " is allowed", callback);
 
             return true;
         }

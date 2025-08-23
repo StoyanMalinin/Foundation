@@ -32,7 +32,7 @@ public class Main {
         Server server = new Server(threadPool);
 
         SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
-        sslContextFactory.setKeyStorePath("../secrets/keystore-dev.jks");
+        sslContextFactory.setKeyStorePath("../secrets/jetty.jks");
         sslContextFactory.setKeyStorePassword("123456");
         sslContextFactory.setEndpointIdentificationAlgorithm(null);
         sslContextFactory.setSniRequired(false);
@@ -60,6 +60,7 @@ public class Main {
         HikariDataSource dataSource = new HikariDataSource(config);
 
         BrowserMiddleware browserMiddleware = new BrowserMiddleware("http://localhost:3000");
+        BrowserMiddleware mobileLocalDevelopmentMiddleware = new BrowserMiddleware("http://localhost:8081");
 
         try {
             PostgresFoundationDatabase dbController = new PostgresFoundationDatabase(dataSource);
@@ -136,6 +137,21 @@ public class Main {
                             fn = MiddlewareUtils.applyMiddleware(
                                     fn,
                                     browserMiddleware, new EnsureHTTPMethodMiddleware("POST")
+                            );
+
+                            return fn.apply(request, response, callback);
+                        }
+                    });
+
+            pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/login-mobile"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            HandlerFunction fn = controller::handleLoginMobile;
+                            fn = MiddlewareUtils.applyMiddleware(
+                                    fn,
+                                    mobileLocalDevelopmentMiddleware, new EnsureHTTPMethodMiddleware("POST")
                             );
 
                             return fn.apply(request, response, callback);

@@ -168,7 +168,7 @@ public class EndpointController {
         return tokenManager.getUsernameFromToken(jwtCookie.getValue());
     }
 
-    public boolean handleLogin(Request request, Response response, Callback callback) {
+    private TokenPair handleLoginLogic(Request request, Response response, Callback callback) {
         BufferedReader reader = new BufferedReader(new InputStreamReader(Content.Source.asInputStream(request)));
         Gson gson = new Gson();
         LoginFormData loginFormData = gson.fromJson(reader, LoginFormData.class);
@@ -184,7 +184,7 @@ public class EndpointController {
 
                 tx.rollback();
                 callback.succeeded();
-                return true;
+                return null;
             }
 
             if (user == null) {
@@ -192,7 +192,7 @@ public class EndpointController {
                 Content.Sink.write(response, true, "Username or passowrd is wrong", callback);
 
                 tx.rollback();
-                return true;
+                return null;
             }
 
             if (!BCrypt.checkpw(loginFormData.password(), user.passwordHash())) {
@@ -200,7 +200,7 @@ public class EndpointController {
                 Content.Sink.write(response, true, "Username or passowrd is wrong", callback);
 
                 tx.rollback();
-                return true;
+                return null;
             }
 
             try {
@@ -210,20 +210,42 @@ public class EndpointController {
                 Content.Sink.write(response, true, "Internal server error - could not create refresh token: " + e.getMessage(), callback);
 
                 tx.rollback();
-                return true;
+                return null;
             }
         } catch (Exception e) {
             response.setStatus(500);
             Content.Sink.write(response, true, "Internal server error - could not create transaction: " + e.getMessage(), callback);
-            return true;
+            return null;
         }
 
         jwt = tokenManager.generateToken(user.username());
 
+        return new TokenPair(jwt, refreshToken);
+    }
+
+    public boolean handleLogin(Request request, Response response, Callback callback) {
+        TokenPair tokenPair = handleLoginLogic(request, response, callback);
+        if (tokenPair == null) return true;
+
         response.setStatus(200);
-        setAuthCookies(response, jwt, refreshToken);
+        setAuthCookies(response, tokenPair.jwt(), tokenPair.refreshToken());
 
         callback.succeeded();
+        return true;
+    }
+
+    public boolean handleLoginMobile(Request request, Response response, Callback callback) {
+        TokenPair tokenPair = handleLoginLogic(request, response, callback);
+        if (tokenPair == null) return true;
+
+        Gson gson = new Gson();
+        JsonObject jsonResponse = new JsonObject();
+        jsonResponse.addProperty("jwt", tokenPair.jwt());
+        jsonResponse.addProperty("refresh_token", tokenPair.refreshToken());
+
+        response.setStatus(200);
+        response.getHeaders().put("Content-Type", "application/json");
+        Content.Sink.write(response, true, gson.toJson(jsonResponse), callback);
         return true;
     }
 
@@ -276,43 +298,6 @@ public class EndpointController {
 
         callback.succeeded();
         return true;
-    }
-
-    private void createSuccessfulLoginResponseBrowser(PostgresFoundationDatabaseTransaction tx, String username, Response response, Callback callback) {
-        String refreshTokenValue;
-        try {
-            refreshTokenValue = createRefreshTokenForUser(tx, username);
-        } catch (SQLException e) {
-            response.setStatus(500);
-            Content.Sink.write(response, true, "Internal server error - could not create refresh token: " + e.getMessage(), callback);
-            return;
-        }
-
-        String jwt = tokenManager.generateToken(username);
-
-        response.setStatus(200);
-        setAuthCookies(response, jwt, refreshTokenValue);
-    }
-
-    private void createSuccessfulLoginResponseMobile(PostgresFoundationDatabaseTransaction tx, String username, Response response, Callback callback) {
-        String refreshTokenValue;
-        try {
-            refreshTokenValue = createRefreshTokenForUser(tx, username);
-        } catch (SQLException e) {
-            response.setStatus(500);
-            Content.Sink.write(response, true, "Internal server error - could not create refresh token: " + e.getMessage(), callback);
-            return;
-        }
-
-        String jwt = tokenManager.generateToken(username);
-
-        response.setStatus(200);
-        response.getHeaders().put("Content-Type", "application/json");
-        Gson gson = new Gson();
-        JsonObject jsonResponse = new JsonObject();
-        jsonResponse.addProperty("jwt", jwt);
-        jsonResponse.addProperty("refresh_token", refreshTokenValue);
-        Content.Sink.write(response, true, gson.toJson(jsonResponse), callback);
     }
 
     private String createRefreshTokenForUser(PostgresFoundationDatabaseTransaction tx, String username) throws SQLException {
@@ -873,4 +858,9 @@ record InjectPresencesRequest(
         @SerializedName("search_ids") int[] searchIds,
         @SerializedName("presences") Presence[] presences,
         @SerializedName("jwt") String jwt
+) {}
+
+record TokenPair (
+        @SerializedName("jwt") String jwt,
+        @SerializedName("refresh_token") String refreshToken
 ) {}
