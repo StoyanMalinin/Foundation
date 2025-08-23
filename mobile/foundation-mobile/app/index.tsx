@@ -1,4 +1,5 @@
 import { Text, View } from "react-native";
+import { AuthWrapper } from "./auth/auth-wrapper";
 
 export default function Index() {
   return (
@@ -9,7 +10,9 @@ export default function Index() {
         alignItems: "center",
       }}
     >
-      <Text>Edit app/index.tsx to edit this screen.</Text>
+      <AuthWrapper>
+        <Text>Edit app/index.tsx to edit this screen.</Text>
+      </AuthWrapper>
     </View>
   );
 }
