@@ -61,7 +61,7 @@ public class Main {
 
         HikariDataSource dataSource = new HikariDataSource(config);
 
-        BrowserMiddleware browserMiddleware = new BrowserMiddleware("http://localhost:3000");
+        BrowserMiddleware browserMiddleware = new BrowserMiddleware("http://ffoundationn.fun:3000");
         BrowserMiddleware mobileLocalDevelopmentMiddleware = new BrowserMiddleware("http://localhost:8081");
 
         try {

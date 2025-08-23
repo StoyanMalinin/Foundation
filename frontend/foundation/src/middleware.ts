@@ -12,11 +12,12 @@ export async function middleware(request: NextRequest) {
     }
 
     const newCookiesFromBackend = authCheck.headers.getSetCookie();
-    return NextResponse.redirect(request.nextUrl, {
-        headers: {
-            'Set-Cookie': newCookiesFromBackend.join("; ")
-        }
+    const response = NextResponse.redirect(request.nextUrl);
+    newCookiesFromBackend.forEach(cookie => {
+        response.headers.append('Set-Cookie', cookie);
     });
+    
+    return response;
 }
 
 export const config = {
