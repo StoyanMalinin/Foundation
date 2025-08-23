@@ -1,13 +1,8 @@
 import { NextResponse, NextRequest } from 'next/server';
+import { FoundationBackend } from "@/backend/foundation-backend";
 
 export async function middleware(request: NextRequest) {
-    const authCheck = await fetch("https://localhost:6969/check-auth", {
-        method: "GET",
-        credentials: "include",
-        headers: {
-            "Cookie": request.headers.get("cookie") ?? "",
-        }
-    });
+    const authCheck = await FoundationBackend.checkAuth(request.headers.get("cookie") ?? "");
 
     if (!authCheck.ok) {
         return NextResponse.redirect(new URL("/auth/login", request.url));

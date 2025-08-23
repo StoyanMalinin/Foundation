@@ -1,7 +1,9 @@
+
 "use client";
 
 import { useActionState } from "react";
 import {SearchForm, Search, SearchFormState} from "../form";
+import { FoundationBackend } from "@/backend/foundation-backend";
 import { Box } from "@mui/material";
 
 export default function UpdateSearchForm({ search }: { search: Search }) {
@@ -27,14 +29,7 @@ async function updateSearchAction(prevState: SearchFormState, formData: FormData
         description: formData.get("description") as string,
     };
 
-    const res = await fetch(`https://localhost:6969/update-search`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updatedSearch),
-        credentials: "include",
-    });
+    const res = await FoundationBackend.updateSearch(updatedSearch);
     if (res.status != 200) {
         const errorData = await res.text();
         return {

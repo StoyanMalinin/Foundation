@@ -8,5 +8,5 @@ backend/FoundationBackend/target/**
 out/**
 frontend/.idea/**
 backend/secrets/
-
+frontend/.env.*
 

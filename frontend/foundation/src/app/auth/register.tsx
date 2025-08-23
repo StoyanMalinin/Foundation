@@ -4,6 +4,7 @@ import {Box, Button, Input, Paper} from "@mui/material";
 import { redirect } from "next/navigation";
 import Form from "next/form";
 import { useActionState } from "react";
+import { FoundationBackend } from "@/backend/foundation-backend";
 
 type FormState = {
     username: string
@@ -39,16 +40,11 @@ export default function Register() {
 }
 
 async function registerAction(prevState: FormState, formData: FormData): Promise<FormState> {
-    let res = await fetch('https://localhost:6969/register', {
-        method: "post",
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            'username': formData.get("username"),
-            'password': formData.get("password"),
-            'first_name': formData.get("first_name"),
-            'last_name': formData.get("last_name"),
-        }),
-        credentials: "include",
+    let res = await FoundationBackend.register({
+        username: formData.get("username")?.toString() ?? "",
+        password: formData.get("password")?.toString() ?? "",
+        first_name: formData.get("first_name")?.toString() ?? "",
+        last_name: formData.get("last_name")?.toString() ?? "",
     });
 
     if (res.status == 200) {

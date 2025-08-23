@@ -1,6 +1,7 @@
 "use client";
 
 import { Box, Button, Link } from "@mui/material";
+import { FoundationBackend } from "@/backend/foundation-backend";
 import { useEffect, useState } from "react";
 
 type UserData = {
@@ -13,10 +14,7 @@ export default function Home() {
   useEffect(() => {
     const fetchUserData = async () => {
       try {
-        const response = await fetch("https://localhost:6969/who-am-i", {
-          method: "GET",
-          credentials: "include",
-        });
+  const response = await FoundationBackend.whoAmI();
         const data = await response.json();
         setUserData({
           firstName: data["first_name"],

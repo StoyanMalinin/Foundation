@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import Form from "next/form";
 import { useActionState } from "react";
 import Link from "next/link";
+import { FoundationBackend } from "@/backend/foundation-backend";
 
 type FormState = {
     username: string
@@ -42,15 +43,9 @@ export default function Login() {
 }
 
 async function loginAction(prevState: FormState, formData: FormData): Promise<FormState> {
-    let res = await fetch('https://localhost:6969/login', {
-        method: "post",
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({
-            'username': formData.get("username"),
-            'password': formData.get("password"),
-        }),
-        credentials: "include",
-    });
+    let res = await FoundationBackend.login(
+        formData.get("username")?.toString() ?? "", 
+        formData.get("password")?.toString() ?? "");
 
     if (res.status == 200) {
         redirect('/');

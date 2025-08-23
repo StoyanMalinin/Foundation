@@ -1,14 +1,18 @@
 "use client";
 
-import { useRef } from "react";
+import { Suspense, useRef } from "react";
 import MapWrapper from "./map-wrapper";
 import { useSearchParams } from "next/navigation";
 import { NavigationBar } from "../navigation/navigation-bar";
 
-export default function MapPage() {
+export default function Page() {
+    return <Suspense><MapPage /></Suspense>
+}
+
+function MapPage() {
     const searchParams = useSearchParams();
-    const divRef = useRef<HTMLDivElement>(null);
-    const canvasRef = useRef<HTMLCanvasElement>(null);
+    const divRef = useRef<HTMLDivElement>(null) as React.RefObject<HTMLDivElement>;
+    const canvasRef = useRef<HTMLCanvasElement>(null) as React.RefObject<HTMLCanvasElement>;
 
     const id = searchParams.get("id");
     if (id == null) return <p>You should specify search ID</p>;

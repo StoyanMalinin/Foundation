@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import { SearchForm, Search, SearchFormState } from "../form";
 import { redirect } from "next/navigation";
 import { Box } from "@mui/material";
+import { FoundationBackend } from "@/backend/foundation-backend";
 
 export default function CreateSearchForm() {
     const initialSearch: Search = {
@@ -31,14 +32,7 @@ async function createSearchAction(prevState: SearchFormState, formData: FormData
         description: formData.get("description") as string,
     };
 
-    const res = await fetch(`https://localhost:6969/create-search`, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify(newSearch),
-        credentials: "include",
-    });
+    const res = await FoundationBackend.createSearch(newSearch);
 
     if (res.status != 201) {
         const errorData = await res.text();

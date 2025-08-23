@@ -2,15 +2,10 @@
 
 import {revalidatePath} from "next/cache";
 import {cookies} from "next/headers";
+import { FoundationBackend } from "@/backend/foundation-backend";
 
 export async function deleteAction(searchId: number) {
-    const res = await fetch(`https://localhost:6969/delete-search?id=${searchId}`, {
-        method: 'DELETE',
-        credentials: 'include',
-        headers: {
-            'Authorization': `Bearer ${(await cookies()).get("jwt")?.value}`
-        }
-    });
+    const res = await FoundationBackend.deleteSearch(searchId, (await cookies()).get("jwt")?.value ?? "");
 
     revalidatePath(".");
     return res.ok;
