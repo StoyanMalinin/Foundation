@@ -1,15 +1,17 @@
+package main.java;
+
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import foundation.auth.TokenManager;
-import foundation.database.PostgresFoundationDatabase;
-import foundation.map.MapImageGetter;
-import foundation.map.tomtom.BaiscTomTomAPICommunicator;
-import foundation.map.tomtom.CachedTomTomAPICommunicator;
-import foundation.web.EndpointController;
-import foundation.web.middleware.HandlerFunction;
-import foundation.web.middleware.MiddlewareUtils;
-import foundation.web.middleware.BrowserMiddleware;
-import foundation.web.middleware.EnsureHTTPMethodMiddleware;
+import main.java.foundation.auth.TokenManager;
+import main.java.foundation.database.PostgresFoundationDatabase;
+import main.java.foundation.map.MapImageGetter;
+import main.java.foundation.map.tomtom.BaiscTomTomAPICommunicator;
+import main.java.foundation.map.tomtom.CachedTomTomAPICommunicator;
+import main.java.foundation.web.EndpointController;
+import main.java.foundation.web.middleware.HandlerFunction;
+import main.java.foundation.web.middleware.MiddlewareUtils;
+import main.java.foundation.web.middleware.BrowserMiddleware;
+import main.java.foundation.web.middleware.EnsureHTTPMethodMiddleware;
 import org.eclipse.jetty.alpn.server.ALPNServerConnectionFactory;
 import org.eclipse.jetty.http.pathmap.ServletPathSpec;
 import org.eclipse.jetty.http2.server.HTTP2ServerConnectionFactory;

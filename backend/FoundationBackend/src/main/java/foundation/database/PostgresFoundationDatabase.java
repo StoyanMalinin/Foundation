@@ -1,8 +1,8 @@
-package foundation.database;
+package main.java.foundation.database;
 
 import java.sql.*;
 
-import foundation.database.structure.*;
+import main.java.foundation.database.structure.*;
 
 import javax.sql.DataSource;
 import java.util.List;

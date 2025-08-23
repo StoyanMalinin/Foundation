@@ -1,4 +1,4 @@
-package observability;
+package main.java.observability;
 
 import java.time.Duration;
 import java.time.Instant;

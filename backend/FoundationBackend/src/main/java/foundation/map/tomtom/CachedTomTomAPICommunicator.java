@@ -1,6 +1,6 @@
-package foundation.map.tomtom;
+package main.java.foundation.map.tomtom;
 
-import foundation.map.MapImageGetter;
+import main.java.foundation.map.MapImageGetter;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPool;
 

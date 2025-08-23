@@ -1,10 +1,10 @@
-package foundation.map.tomtom;
+package main.java.foundation.map.tomtom;
 
 import com.peertopark.java.geocalc.BoundingArea;
 import com.peertopark.java.geocalc.DegreeCoordinate;
 import com.peertopark.java.geocalc.EarthCalc;
 import com.peertopark.java.geocalc.Point;
-import foundation.map.BoundingBox;
+import main.java.foundation.map.BoundingBox;
 
 // Most of the methods here are copy-pasta from
 // https://developer.tomtom.com/map-display-api/documentation/zoom-levels-and-tile-grid

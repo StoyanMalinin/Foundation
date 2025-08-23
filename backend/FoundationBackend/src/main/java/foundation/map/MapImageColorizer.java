@@ -1,10 +1,10 @@
-package foundation.map;
+package main.java.foundation.map;
 
 import com.peertopark.java.geocalc.DegreeCoordinate;
 import com.peertopark.java.geocalc.EarthCalc;
 import com.peertopark.java.geocalc.Point;
-import foundation.database.FoundationDatabaseController;
-import foundation.database.structure.Presence;
+import main.java.foundation.database.FoundationDatabaseController;
+import main.java.foundation.database.structure.Presence;
 
 import java.awt.*;
 import java.awt.image.BufferedImage;

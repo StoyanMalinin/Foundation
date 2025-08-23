@@ -1,6 +1,6 @@
-package foundation.database;
+package main.java.foundation.database;
 
-import foundation.database.structure.*;
+import main.java.foundation.database.structure.*;
 
 import java.sql.Connection;
 import java.sql.SQLException;

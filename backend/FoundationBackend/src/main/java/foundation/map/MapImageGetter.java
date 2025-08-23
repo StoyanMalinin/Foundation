@@ -1,4 +1,4 @@
-package foundation.map;
+package main.java.foundation.map;
 
 import java.awt.image.BufferedImage;
 

@@ -1,3 +1,3 @@
-package foundation.database.structure;
+package main.java.foundation.database.structure;
 
 public record SearchMetadata(int id, String title) {}

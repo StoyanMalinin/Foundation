@@ -1,4 +1,4 @@
-package foundation.database.structure;
+package main.java.foundation.database.structure;
 
 import com.google.gson.annotations.SerializedName;
 

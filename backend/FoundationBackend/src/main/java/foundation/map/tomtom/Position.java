@@ -1,4 +1,4 @@
-package foundation.map.tomtom;
+package main.java.foundation.map.tomtom;
 
 public class Position<T extends Number> {
     private T x;

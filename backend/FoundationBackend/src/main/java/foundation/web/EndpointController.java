@@ -1,19 +1,19 @@
-package foundation.web;
+package main.java.foundation.web;
 
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.annotations.SerializedName;
-import foundation.auth.LoginFormData;
-import foundation.auth.RegisterFormData;
-import foundation.auth.TokenManager;
-import foundation.database.PostgresFoundationDatabase;
-import foundation.database.PostgresFoundationDatabaseTransaction;
-import foundation.database.structure.*;
-import foundation.map.MapImageColorizer;
-import foundation.map.MapImageGetter;
-import foundation.map.tomtom.TileGridUtils;
-import observability.PerformanceUtils;
+import main.java.foundation.auth.LoginFormData;
+import main.java.foundation.auth.RegisterFormData;
+import main.java.foundation.auth.TokenManager;
+import main.java.foundation.database.PostgresFoundationDatabase;
+import main.java.foundation.database.PostgresFoundationDatabaseTransaction;
+import main.java.foundation.database.structure.*;
+import main.java.foundation.map.MapImageColorizer;
+import main.java.foundation.map.MapImageGetter;
+import main.java.foundation.map.tomtom.TileGridUtils;
+import main.java.observability.PerformanceUtils;
 import org.eclipse.jetty.http.HttpCookie;
 import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.Request;
@@ -799,13 +799,13 @@ public class EndpointController {
                 return true;
             }
 
-            ArrayList<foundation.database.structure.Presence> newPresences = new ArrayList<>(
-                    Arrays.stream(injectPresencesRequest.presences()).map(p -> new foundation.database.structure.Presence(
+            ArrayList<main.java.foundation.database.structure.Presence> newPresences = new ArrayList<>(
+                    Arrays.stream(injectPresencesRequest.presences()).map(p -> new main.java.foundation.database.structure.Presence(
                             p.recordedAt(), p.lat(), p.lon()
                     )).toList()
             );
 
-            ArrayList<foundation.database.structure.Presence> allPresences = new ArrayList<>(existingPresences.stream().map(RateLimiterPresence::presence).toList());
+            ArrayList<main.java.foundation.database.structure.Presence> allPresences = new ArrayList<>(existingPresences.stream().map(RateLimiterPresence::presence).toList());
             allPresences.addAll(newPresences);
 
             int ptr = 0;

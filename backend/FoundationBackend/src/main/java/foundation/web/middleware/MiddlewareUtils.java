@@ -1,4 +1,4 @@
-package foundation.web.middleware;
+package main.java.foundation.web.middleware;
 
 import java.util.Arrays;
 import java.util.Collections;
