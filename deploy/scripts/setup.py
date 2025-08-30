@@ -17,11 +17,12 @@ def create_config_file():
     config["db"]["username"] = "postgres"
     config["db"]["password"] = "postgres"
 
-    config["tomtom"] = {}
-    config["tomtom"]["api_key"] = "your_tomtom_api_key"
+    config["tomtom_api_key"] = "your_tomtom_api_key"
 
     config["cert"] = {}
     config["cert"]["password"] = "your_cert_password"
+
+    config["jwt_secret"] = "your_jwt_secret"
 
     config["frontend"] = {}
 
@@ -31,8 +32,20 @@ def create_config_file():
         config["frontend"]["origin"] = "http://localhost:3000"
 
     json_config = json.dumps(config)
-    with open(CONFIG_FILE_PATH, "w") as f:
+    os.makedirs(os.path.dirname(CONFIG_FILE_PATH), exist_ok=True)
+    with open(CONFIG_FILE_PATH, "w+") as f:
         f.write(json_config)
+
+def setup_frontend():
+    silent_remove_file("../../frontend/foundation/.env.local")
+    silent_remove_file("../../frontend/foundation/.env.production")
+
+    if is_production_setup():
+        with open("../../frontend/foundation/.env.production", "w+") as f:
+            f.write("NEXT_PUBLIC_BACKEND_API_BASE_URL=https://ffoundationn.fun:6969\n")
+    else:
+        with open("../../frontend/foundation/.env.local", "w+") as f:
+            f.write("NEXT_PUBLIC_BACKEND_API_BASE_URL=https://localhost:6969\n")
 
 def main():
     if not os.path.exists(CONFIG_FILE_PATH):
@@ -40,6 +53,17 @@ def main():
         create_config_file()
     else:
         print("Config file already exists.")
+
+    print("Setting up frontend...")
+    setup_frontend()
+
+    print("Setup complete.")
+
+def silent_remove_file(file_path):
+    try:
+        os.remove(file_path)
+    except FileNotFoundError:
+        pass
 
 if __name__ == "__main__":
     main()

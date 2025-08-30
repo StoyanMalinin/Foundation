@@ -1,5 +1,7 @@
 package main.java;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import main.java.foundation.auth.TokenManager;
@@ -19,13 +21,28 @@ import org.eclipse.jetty.io.Content;
 import org.eclipse.jetty.server.*;
 import org.eclipse.jetty.server.handler.PathMappingsHandler;
 import org.eclipse.jetty.util.Callback;
+import org.eclipse.jetty.util.Scanner;
 import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.sql.SQLException;
 
 public class Main {
     public static void main(String[] args) {
-        String tokenSecret = "token-secret";
+        JsonObject config;
+        try {
+            config = readConfiguration();
+        } catch (IOException e) {
+            System.out.println("Failed to read configuration: " + e.getMessage());
+            return;
+        }
+
+        String tokenSecret = config.get("jwt_secret").getAsString();
         TokenManager tokenManager = new TokenManager(tokenSecret);
 
         QueuedThreadPool threadPool = new QueuedThreadPool();
@@ -35,7 +52,7 @@ public class Main {
 
         SslContextFactory.Server sslContextFactory = new SslContextFactory.Server();
         sslContextFactory.setKeyStorePath("../secrets/jetty.jks");
-        sslContextFactory.setKeyStorePassword("123456");
+        sslContextFactory.setKeyStorePassword(config.get("cert").getAsJsonObject().get("password").getAsString());
         sslContextFactory.setEndpointIdentificationAlgorithm(null);
         sslContextFactory.setSniRequired(false);
 
@@ -51,22 +68,24 @@ public class Main {
         httpsConnector.setPort(6969);
         server.addConnector(httpsConnector);
 
-        HikariConfig config = new HikariConfig();
-        config.setJdbcUrl("jdbc:postgresql://127.0.0.1:5432/foundation");
-        config.setUsername("postgres");
-        config.setPassword("postgres");
-        config.addDataSourceProperty("cachePrepStmts", "true");
-        config.addDataSourceProperty("prepStmtCacheSize", "250");
-        config.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+        HikariConfig hikariConfig = new HikariConfig();
+        hikariConfig.setJdbcUrl(config.get("db").getAsJsonObject().get("url").getAsString());
+        hikariConfig.setUsername(config.get("db").getAsJsonObject().get("username").getAsString());
+        hikariConfig.setPassword(config.get("db").getAsJsonObject().get("password").getAsString());
+        hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
+        hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
+        hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
 
-        HikariDataSource dataSource = new HikariDataSource(config);
+        HikariDataSource dataSource = new HikariDataSource(hikariConfig);
 
-        BrowserMiddleware browserMiddleware = new BrowserMiddleware("https://ffoundationn.fun");
+        BrowserMiddleware browserMiddleware = new BrowserMiddleware(config.get("frontend").getAsJsonObject().get("origin").getAsString());
         BrowserMiddleware mobileLocalDevelopmentMiddleware = new BrowserMiddleware("http://localhost:8081");
 
         try {
             PostgresFoundationDatabase dbController = new PostgresFoundationDatabase(dataSource);
-            MapImageGetter mapImageGetter = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator());
+            MapImageGetter mapImageGetter = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator(
+                    config.get("tomtom_api_key").getAsString()
+            ));
             EndpointController controller = new EndpointController(mapImageGetter, dbController, tokenManager);
 
             PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
@@ -327,5 +346,12 @@ public class Main {
         } catch (Exception e) {
             System.out.println("Unhandled exception: " + e.getMessage());
         }
+    }
+
+    private static JsonObject readConfiguration() throws IOException {
+        String config = Files.readString(Path.of("../../deploy/config/config.json"));
+        Gson gson = new Gson();
+
+        return gson.fromJson(config, JsonObject.class);
     }
 }

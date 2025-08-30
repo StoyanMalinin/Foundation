@@ -12,18 +12,18 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 
 public class BaiscTomTomAPICommunicator implements MapImageGetter {
-    private static final String API_KEY = "pGjCPMXkBdcms0zeNqcy7VHQGmoqnUC4";
+    private final HttpClient httpClient;
+    private final String apiKey;
 
-    private HttpClient httpClient;
-
-    public BaiscTomTomAPICommunicator() {
+    public BaiscTomTomAPICommunicator(String apiKey) {
         this.httpClient = HttpClient.newHttpClient();
+        this.apiKey = apiKey;
     }
 
     private HttpResponse sendRequest(APIQuery query) throws IOException, InterruptedException {
 
         HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(query.toURL(API_KEY)))
+                .uri(URI.create(query.toURL(this.apiKey)))
                 .build();
 
         return httpClient.send(request, HttpResponse.BodyHandlers.ofByteArray());

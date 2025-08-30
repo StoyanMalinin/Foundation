@@ -1,4 +1,4 @@
-const BACKEND_API_BASE_URL = "https://ffoundationn.fun:6969";
+const BACKEND_API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL || "";
 
 class _FoundationBackend {
     login(username: string, password: string) {
