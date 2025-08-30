@@ -1,7 +1,10 @@
-SET search_path TO foundation, public;
+RESET search_path;
+CREATE EXTENSION IF NOT EXISTS postgis;
 
 DROP SCHEMA IF EXISTS foundation CASCADE;
 CREATE SCHEMA foundation;
+
+SET search_path TO foundation, public;
 
 create table foundation.presences
 (
