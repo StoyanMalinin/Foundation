@@ -2,7 +2,9 @@
 
 import json
 import os
+import subprocess
 import sys
+import requests
 
 CONFIG_FILE_PATH = "../config/config.json"
 
@@ -45,6 +47,52 @@ def setup_frontend():
         else:
             f.write("NEXT_PUBLIC_BACKEND_API_BASE_URL=https://localhost:6969\n")
 
+def setup_caddy():
+    response = requests.get("http://localhost:2019/reverse_proxy/upstreams")
+    if response.status_code != 200: # Caddy is not running
+        sh("sudo apt-get update && sudo apt-get install -y caddy")
+        sh("caddy start")
+
+    print("checking the setup")
+
+    SERVER_NAME = "foundation_server"
+    response = requests.get(f"http://localhost:2019/config/apps/http/servers/{SERVER_NAME}")
+    if response.ok:
+        print("Caddy is already set up")
+        return
+
+    requests.put(f"http://localhost:2019/config/apps/http/servers/{SERVER_NAME}", json={
+        "listen": [":443"],
+        "routes": [
+            {
+                "match": [{ "host": ["ffoundationn.fun"] }],
+                "handle": [
+                {
+                    "handler": "encode",
+                    "encodings": {
+                        "zstd": {},
+                        "gzip": {}
+                    }
+                },
+                {
+                    "handler": "reverse_proxy",
+                    "upstreams": [{ "dial": "127.0.0.1:3000" }]
+                }
+                ]
+            }
+        ],
+        "automatic_https": { "disable_redirects": False }
+    })
+
+def silent_remove_file(file_path):
+    try:
+        os.remove(file_path)
+    except FileNotFoundError:
+        pass
+
+def sh(cmd):
+    subprocess.run(cmd, shell=True, check=True)
+
 def main():
     if not os.path.exists(CONFIG_FILE_PATH):
         print("Creating config file...")
@@ -55,13 +103,13 @@ def main():
     print("Setting up frontend...")
     setup_frontend()
 
-    print("Setup complete.")
+    if is_production_setup():
+        print("Setting up Caddy...")
+        setup_caddy()
+    else:
+        print("Skipping caddy setup")
 
-def silent_remove_file(file_path):
-    try:
-        os.remove(file_path)
-    except FileNotFoundError:
-        pass
+    print("Setup complete.")
 
 if __name__ == "__main__":
     main()
