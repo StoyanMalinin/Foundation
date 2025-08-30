@@ -37,14 +37,12 @@ def create_config_file():
         f.write(json_config)
 
 def setup_frontend():
-    silent_remove_file("../../frontend/foundation/.env.local")
-    silent_remove_file("../../frontend/foundation/.env.production")
+    silent_remove_file("../../frontend/foundation/.env")
 
-    if is_production_setup():
-        with open("../../frontend/foundation/.env.production", "w+") as f:
+    with open("../../frontend/foundation/.env", "w+") as f:
+        if is_production_setup():
             f.write("NEXT_PUBLIC_BACKEND_API_BASE_URL=https://ffoundationn.fun:6969\n")
-    else:
-        with open("../../frontend/foundation/.env.local", "w+") as f:
+        else:
             f.write("NEXT_PUBLIC_BACKEND_API_BASE_URL=https://localhost:6969\n")
 
 def main():
