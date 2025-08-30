@@ -11,11 +11,17 @@ CONFIG_FILE_PATH = "../config/config.json"
 def is_production_setup():
     return "--production" in sys.argv
 
+def is_backend_outside_docker():
+    return "--backend-outside-docker" in sys.argv
+
 def create_config_file():
     config = {}
 
     config["db"] = {}
-    config["db"]["url"] = "jdbc:postgresql://127.0.0.1:5432/foundation"
+    if is_backend_outside_docker():
+        config["db"]["url"] = "jdbc:postgresql://127.0.0.1:5432/foundation"
+    else:
+        config["db"]["url"] = "jdbc:postgresql://postgis:5432/foundation"
     config["db"]["username"] = "postgres"
     config["db"]["password"] = "postgres"
 
