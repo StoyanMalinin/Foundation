@@ -1,4 +1,10 @@
-RESET search_path;
+\c postgres
+
+DROP DATABASE IF EXISTS foundation;
+CREATE DATABASE foundation;
+
+\c foundation
+
 CREATE EXTENSION IF NOT EXISTS postgis;
 
 DROP SCHEMA IF EXISTS foundation CASCADE;

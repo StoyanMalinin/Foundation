@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import * as tomtom from './tomtom-map-utils'
 import { Tile } from "./map-utils";
+import { FoundationBackend } from "@/backend/foundation-backend";
 
 type MapTileProps = {
     searchId: number,
@@ -80,8 +81,7 @@ async function fetchMapTile(t: Tile, searchId: number): Promise<HTMLImageElement
     }
     
     console.time(`fetchMapTile ${key}`);
-    var url = `https://localhost:6969/map-tile?searchId=${searchId}&z=${t.z}&x=${t.x}&y=${t.y}`;
-    tileCache[key] = fetch(url).then(response => {
+    tileCache[key] = FoundationBackend.getMapTile(searchId, t.z, t.x, t.y).then(response => {
         console.timeEnd(`fetchMapTile ${key}`);
         if (response.status == 200) {
             return response.blob();

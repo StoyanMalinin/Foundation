@@ -1,4 +1,4 @@
-const BACKEND_API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL;
+const BACKEND_API_BASE_URL = "https://ffoundationn.fun:6969";
 
 class _FoundationBackend {
     login(username: string, password: string) {
@@ -75,6 +75,10 @@ class _FoundationBackend {
             credentials: 'include',
             headers: { 'Authorization': `Bearer ${jwt}` },
         });
+    }
+
+    getMapTile(searchId: number, z: number, x: number, y: number) {
+        return fetch(`${BACKEND_API_BASE_URL}/map-tile?searchId=${searchId}&z=${z}&x=${x}&y=${y}`);
     }
 }
 
