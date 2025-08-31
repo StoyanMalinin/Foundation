@@ -1,8 +1,21 @@
-const BACKEND_API_BASE_URL = process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL || "";
+const BACKEND_API_BASE_URL_FROM_SERVER = process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL_FROM_SERVER || "";
+const BACKEND_API_BASE_URL_FROM_BROWSER = process.env.NEXT_PUBLIC_BACKEND_API_BASE_URL_FROM_BROWSER || "";
+
+function isBrowser() {
+  return typeof window !== "undefined";
+}
+
+function getBackendAPIURL() {
+    if (isBrowser()) {
+        return BACKEND_API_BASE_URL_FROM_BROWSER;
+    }
+
+    return BACKEND_API_BASE_URL_FROM_SERVER;
+}
 
 class _FoundationBackend {
     login(username: string, password: string) {
-        return fetch(`${BACKEND_API_BASE_URL}/login`, {
+        return fetch(`${getBackendAPIURL()}/login`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -13,7 +26,7 @@ class _FoundationBackend {
     }
 
     register(data: { username: string, password: string, first_name: string, last_name: string }) {
-        return fetch(`${BACKEND_API_BASE_URL}/register`, {
+        return fetch(`${getBackendAPIURL()}/register`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(data),
@@ -22,7 +35,7 @@ class _FoundationBackend {
     }
 
     createSearch(newSearch: { title: string, description: string }) {
-        return fetch(`${BACKEND_API_BASE_URL}/create-search`, {
+        return fetch(`${getBackendAPIURL()}/create-search`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(newSearch),
@@ -31,7 +44,7 @@ class _FoundationBackend {
     }
 
     updateSearch(updatedSearch: { id: number, title: string, description: string }) {
-        return fetch(`${BACKEND_API_BASE_URL}/update-search`, {
+        return fetch(`${getBackendAPIURL()}/update-search`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(updatedSearch),
@@ -40,11 +53,11 @@ class _FoundationBackend {
     }
 
     getSearch(searchId: number) {
-        return fetch(`${BACKEND_API_BASE_URL}/search?id=${searchId}`);
+        return fetch(`${getBackendAPIURL()}/search?id=${searchId}`);
     }
 
     checkAuth(cookie: string) {
-        return fetch(`${BACKEND_API_BASE_URL}/check-auth`, {
+        return fetch(`${getBackendAPIURL()}/check-auth`, {
             method: 'GET',
             credentials: 'include',
             headers: { 'Cookie': cookie },
@@ -52,25 +65,25 @@ class _FoundationBackend {
     }
 
     whoAmI() {
-        return fetch(`${BACKEND_API_BASE_URL}/who-am-i`, {
+        return fetch(`${getBackendAPIURL()}/who-am-i`, {
             method: 'GET',
             credentials: 'include',
         });
     }
 
     fetchAdminSearches(jwt: string) {
-        return fetch(`${BACKEND_API_BASE_URL}/admin-searches-metadata`, {
+        return fetch(`${getBackendAPIURL()}/admin-searches-metadata`, {
             credentials: 'include',
             headers: { 'Authorization': `Bearer ${jwt}` },
         });
     }
 
     fetchSearches() {
-        return fetch(`${BACKEND_API_BASE_URL}/searches-metadata`);
+        return fetch(`${getBackendAPIURL()}/searches-metadata`);
     }
 
     deleteSearch(searchId: number, jwt: string) {
-        return fetch(`${BACKEND_API_BASE_URL}/delete-search?id=${searchId}`, {
+        return fetch(`${getBackendAPIURL()}/delete-search?id=${searchId}`, {
             method: 'DELETE',
             credentials: 'include',
             headers: { 'Authorization': `Bearer ${jwt}` },
@@ -78,7 +91,7 @@ class _FoundationBackend {
     }
 
     getMapTile(searchId: number, z: number, x: number, y: number) {
-        return fetch(`${BACKEND_API_BASE_URL}/map-tile?searchId=${searchId}&z=${z}&x=${x}&y=${y}`);
+        return fetch(`${getBackendAPIURL()}/map-tile?searchId=${searchId}&z=${z}&x=${x}&y=${y}`);
     }
 }
 

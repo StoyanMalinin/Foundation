@@ -14,6 +14,9 @@ def is_production_setup():
 def is_backend_outside_docker():
     return "--backend-outside-docker" in sys.argv
 
+def is_frontend_outside_docker():
+    return "--frontend-outside-docker" in sys.argv
+
 def create_config_file():
     config = {}
 
@@ -48,10 +51,15 @@ def setup_frontend():
     silent_remove_file("../../frontend/foundation/.env")
 
     with open("../../frontend/foundation/.env", "w+") as f:
-        if is_production_setup():
-            f.write("NEXT_PUBLIC_BACKEND_API_BASE_URL=https://ffoundationn.fun:6969\n")
+        url = "https://ffoundationn.fun:6969" if is_production_setup() else "https://localhost:6969"
+        f.write(f"NEXT_PUBLIC_BACKEND_API_BASE_URL_FROM_BROWSER={url}\n")
+
+        url = None
+        if is_frontend_outside_docker():
+            url = "https://ffoundationn.fun:6969" if is_production_setup() else "https://localhost:6969"
         else:
-            f.write("NEXT_PUBLIC_BACKEND_API_BASE_URL=https://localhost:6969\n")
+            url = "https://backend:6969"
+        f.write(f"NEXT_PUBLIC_BACKEND_API_BASE_URL_FROM_SERVER={url}\n")
 
 def setup_caddy():
     response = requests.get("http://localhost:2019/reverse_proxy/upstreams")
