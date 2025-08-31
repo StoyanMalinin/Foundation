@@ -6,6 +6,7 @@ import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { FoundationBackend } from '@/backend/foundation-backend';
 
 export function NavigationBar() {
   return (
@@ -34,9 +35,6 @@ export function NavigationBar() {
 };
 
 async function onLogout() {
-  await fetch ('https://localhost:6969/logout', {
-    method: 'POST',
-    credentials: 'include',
-  });
+  await FoundationBackend.logout();
   redirect('/');
 }

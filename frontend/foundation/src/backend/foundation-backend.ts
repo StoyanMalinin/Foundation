@@ -93,6 +93,13 @@ class _FoundationBackend {
     getMapTile(searchId: number, z: number, x: number, y: number) {
         return fetch(`${getBackendAPIURL()}/map-tile?searchId=${searchId}&z=${z}&x=${x}&y=${y}`);
     }
+
+    logout() {
+        return fetch(`${getBackendAPIURL()}/logout`, {
+            method: 'POST',
+            credentials: 'include',
+        });
+    }
 }
 
 export const FoundationBackend = new _FoundationBackend();
