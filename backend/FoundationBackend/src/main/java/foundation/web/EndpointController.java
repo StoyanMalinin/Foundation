@@ -515,7 +515,7 @@ public class EndpointController {
 
     private static void setAuthCookies(Response response, String jwt, String refreshToken) {
         String jwtCookieString = String.format(
-                "%s=\"%s\"; Path=%s; Max-Age=%d; HttpOnly; SameSite=None; Secure",
+                "%s=\"%s\"; Path=%s; Max-Age=%d; SameSite=None; Secure",
                 "jwt", jwt, "/", 60 * 20
         );
         response.getHeaders().add("Set-Cookie", jwtCookieString);

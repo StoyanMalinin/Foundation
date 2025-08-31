@@ -64,6 +64,14 @@ class _FoundationBackend {
         });
     }
 
+    refreshToken(refreshToken: string) {
+        return fetch(`${getBackendAPIURL()}/refresh-jwt`, {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Authorization': `Bearer ${refreshToken}` },
+        });
+    }
+
     whoAmI() {
         return fetch(`${getBackendAPIURL()}/who-am-i`, {
             method: 'GET',
