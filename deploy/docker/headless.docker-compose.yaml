@@ -1,0 +1,8 @@
+include:
+  - db.docker-compose.yaml
+
+services:
+  backend:
+    image: backend:latest
+    ports:
+      - "6969:6969"

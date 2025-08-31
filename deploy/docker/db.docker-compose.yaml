@@ -4,17 +4,10 @@ services:
     ports:
       - "6379:6379"
   postgis:
-    image: postgis:latest
+    image: foundation-postgis:latest
     ports:
       - "5432:5432"
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
       POSTGRES_DB: foundation
-  backend:
-    image: backend:latest
-    ports:
-      - "6969:6969"
-    depends_on:
-      - postgis
-      - redis
