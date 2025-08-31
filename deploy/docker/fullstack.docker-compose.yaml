@@ -1,0 +1,8 @@
+include:
+  - headless.docker-compose.yaml
+
+services:
+  frontend:
+    image: frontend:latest
+    ports:
+      - "3000:3000"
