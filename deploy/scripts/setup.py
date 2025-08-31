@@ -50,15 +50,9 @@ def create_config_file():
 def setup_frontend():
     silent_remove_file("../../frontend/foundation/.env")
 
+    url = "https://ffoundationn.fun:6969" if is_production_setup() else "https://localhost:6969"
     with open("../../frontend/foundation/.env", "w+") as f:
-        url = "https://ffoundationn.fun:6969" if is_production_setup() else "https://localhost:6969"
         f.write(f"NEXT_PUBLIC_BACKEND_API_BASE_URL_FROM_BROWSER={url}\n")
-
-        url = None
-        if is_frontend_outside_docker():
-            url = "https://ffoundationn.fun:6969" if is_production_setup() else "https://localhost:6969"
-        else:
-            url = "https://backend:6969"
         f.write(f"NEXT_PUBLIC_BACKEND_API_BASE_URL_FROM_SERVER={url}\n")
 
 def setup_caddy():
