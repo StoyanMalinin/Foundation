@@ -14,9 +14,6 @@ def is_production_setup():
 def is_backend_outside_docker():
     return "--backend-outside-docker" in sys.argv
 
-def is_frontend_outside_docker():
-    return "--frontend-outside-docker" in sys.argv
-
 def create_config_file():
     config = {}
 
