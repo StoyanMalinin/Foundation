@@ -1,5 +1,3 @@
-\c foundation
-
 set search_path to foundation, public;
 
 insert into foundation.users (username, password_hash, first_name, last_name)

@@ -1,6 +1,10 @@
 # Foundation
 This is a full-fledged platform **(still under construction)** dedicated to helping people organize themselves in case someone is missing or lost. The idea is simple - everybody reports the areas he has checked with the help of a mobile app. All this data gets aggregated and can be seen publicly on the website, but presenting it in a map where the areas that have recently been checked are marked in red. This aims to help organizers and volunteers, so that people can contribute to searches more seamlessly.
 
+| | | |
+|--|--|--|
+| <img src="docs/dashboard.JPG" width="192" height="108" /> | <img src="docs/list.JPG" width="192" height="108" /> | <img src="docs/map.JPG" width="192" height="108" /> |
+
 # [Developers only] Architecture & deployment
 
 ## Architecture

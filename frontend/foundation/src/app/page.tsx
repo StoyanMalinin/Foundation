@@ -34,7 +34,7 @@ export default function Home() {
       <Button variant="contained">Login</Button>
     </Link>;
 
-  return <Box>
+  return <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100vh', gap: 2 }}>
     <h1>Hello, {userData == null ? "Guest" : `${userData.firstName} ${userData.lastName}`}</h1>
     {redirect}
   </Box>;
