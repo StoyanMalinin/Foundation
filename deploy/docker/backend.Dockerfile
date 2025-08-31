@@ -1,9 +1,9 @@
 FROM maven:3.9.8-eclipse-temurin-21
 WORKDIR /usr/local/app
 
-# Cache dependencies by fetching them offline
+# Cache dependencies
 COPY backend/FoundationBackend/pom.xml ./backend/FoundationBackend/
-RUN mvn -f backend/FoundationBackend/pom.xml dependency:go-offline -B -P only-necessary -DincludeScope=compile -DexcludeReactor=false -T 4C
+RUN mvn -f backend/FoundationBackend/pom.xml install
 
 # Copy source and package
 COPY backend/FoundationBackend ./backend/FoundationBackend
