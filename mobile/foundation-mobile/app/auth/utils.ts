@@ -1,3 +1,4 @@
+import { FoundationBackend } from '@/backend/foundation-backend';
 import * as SecureStore from 'expo-secure-store';
 import { jwtDecode } from "jwt-decode";
 
@@ -51,12 +52,7 @@ export async function isLoggedIn() {
     const refreshToken = await getToken("refreshToken");
     if (refreshToken == null) return false;
 
-    const result = await fetch("https://192.168.1.47:6969/refresh-jwt", {
-        method: "GET",
-        headers: {
-            "Authorization": `Bearer ${refreshToken}`
-        }
-    });
+    const result = await FoundationBackend.refreshJWT(refreshToken);
     if (!result.ok) return false;
 
     const newJWT = (await result.json()).jwt;
@@ -67,13 +63,7 @@ export async function isLoggedIn() {
 }
 
 export async function login(username: string, password: string): Promise<string | null> {
-    const result = await fetch("https://ffoundationn.fun:6969/login-mobile", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ username, password })
-    });
+    const result = await FoundationBackend.login(username, password);
     if (!result.ok) return result.text();
 
     const json = await result.json();
