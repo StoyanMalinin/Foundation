@@ -86,8 +86,9 @@ public class Main {
             PostgresFoundationDatabase dbController = new PostgresFoundationDatabase(dataSource);
 
             String redisURL = config.get("db").getAsJsonObject().get("redis").getAsJsonObject().get("url").getAsString();
+            int redisPort = config.get("db").getAsJsonObject().get("redis").getAsJsonObject().get("port").getAsInt();
             MapImageGetter mapImageGetter = new CachedTomTomAPICommunicator(
-                    redisURL,
+                    redisURL, redisPort,
                     new BaiscTomTomAPICommunicator(config.get("tomtom_api_key").getAsString())
             );
 

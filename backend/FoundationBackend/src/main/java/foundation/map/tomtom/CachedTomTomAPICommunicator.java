@@ -14,9 +14,9 @@ public class CachedTomTomAPICommunicator implements MapImageGetter {
     private final MapImageGetter api;
     private final JedisPool jedisPool;
 
-    public CachedTomTomAPICommunicator(String redisURL, MapImageGetter api) {
+    public CachedTomTomAPICommunicator(String redisURL, int redisPort, MapImageGetter api) {
         this.api = api;
-        this.jedisPool = new JedisPool(redisURL);
+        this.jedisPool = new JedisPool(redisURL, redisPort);
     }
 
     private byte[] gridQueryToByteArray(int x, int y, int z) {

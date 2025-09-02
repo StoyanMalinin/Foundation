@@ -28,6 +28,7 @@ def create_config_file():
         config["db"]["postgres"]["url"] = "jdbc:postgresql://postgis:5432/foundation"
     config["db"]["postgres"]["username"] = "postgres"
     config["db"]["postgres"]["password"] = "postgres"
+    config["db"]["redis"]["port"] = 6379
 
     config["tomtom_api_key"] = "your_tomtom_api_key"
 
