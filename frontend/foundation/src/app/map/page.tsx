@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { NavigationBar } from "../navigation/navigation-bar";
 
 export default function Page() {
-    return <Suspense><MapPage /></Suspense>
+    return <MapPage />
 }
 
 function MapPage() {
@@ -20,8 +20,16 @@ function MapPage() {
     return (
         <>
             <NavigationBar />
-            <div ref={divRef} key={"map-wrapper-key"} className="map-wrapper">
-                <canvas id="map-canvas" ref={canvasRef} style={{width: "100%", height: "100%", objectFit: "contain"}} />
+            <div ref={divRef} key={"map-wrapper-key"} className="map-wrapper" style={{
+                width: "95%",
+                height: "80vh",
+                margin: "auto",
+            }}>
+                <canvas id="map-canvas" ref={canvasRef} style={{
+                    width: "100%", 
+                    margin: 0,
+                    border: "0.1vw solid black",
+                    }} />
                 <MapWrapper divRef={divRef} canvasRef={canvasRef} searchId={parseInt(id)} />
             </div>
         </>
