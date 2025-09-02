@@ -24,7 +24,7 @@ def create_config_file():
         config["db"]["redis"]["url"] = "127.0.0.1:6379"
         config["db"]["postgres"]["url"] = "jdbc:postgresql://127.0.0.1:5432/foundation"
     else:
-        config["db"]["redis"]["url"] = "redis:6379"
+        config["db"]["redis"]["url"] = "redis"
         config["db"]["postgres"]["url"] = "jdbc:postgresql://postgis:5432/foundation"
     config["db"]["postgres"]["username"] = "postgres"
     config["db"]["postgres"]["password"] = "postgres"
