@@ -11,14 +11,12 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 public class CachedTomTomAPICommunicator implements MapImageGetter {
-    private MapImageGetter api;
-    private JedisPool jedisPool;
+    private final MapImageGetter api;
+    private final JedisPool jedisPool;
 
-    private static final int JEDIS_PORT = 6379;
-
-    public CachedTomTomAPICommunicator(MapImageGetter api) {
+    public CachedTomTomAPICommunicator(String redisURL, MapImageGetter api) {
         this.api = api;
-        this.jedisPool = new JedisPool("localhost", JEDIS_PORT);
+        this.jedisPool = new JedisPool(redisURL);
     }
 
     private byte[] gridQueryToByteArray(int x, int y, int z) {

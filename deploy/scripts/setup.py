@@ -18,12 +18,16 @@ def create_config_file():
     config = {}
 
     config["db"] = {}
+    config["db"]["postgres"] = {}
+    config["db"]["redis"] = {}
     if is_backend_outside_docker():
-        config["db"]["url"] = "jdbc:postgresql://127.0.0.1:5432/foundation"
+        config["db"]["redis"]["url"] = "127.0.0.1:6379"
+        config["db"]["postgres"]["url"] = "jdbc:postgresql://127.0.0.1:5432/foundation"
     else:
-        config["db"]["url"] = "jdbc:postgresql://postgis:5432/foundation"
-    config["db"]["username"] = "postgres"
-    config["db"]["password"] = "postgres"
+        config["db"]["redis"]["url"] = "redis:6379"
+        config["db"]["postgres"]["url"] = "jdbc:postgresql://postgis:5432/foundation"
+    config["db"]["postgres"]["username"] = "postgres"
+    config["db"]["postgres"]["password"] = "postgres"
 
     config["tomtom_api_key"] = "your_tomtom_api_key"
 

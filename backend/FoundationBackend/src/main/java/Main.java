@@ -68,10 +68,11 @@ public class Main {
         httpsConnector.setPort(6969);
         server.addConnector(httpsConnector);
 
+        JsonObject postgresConfig = config.get("db").getAsJsonObject().get("postgres").getAsJsonObject();
         HikariConfig hikariConfig = new HikariConfig();
-        hikariConfig.setJdbcUrl(config.get("db").getAsJsonObject().get("url").getAsString());
-        hikariConfig.setUsername(config.get("db").getAsJsonObject().get("username").getAsString());
-        hikariConfig.setPassword(config.get("db").getAsJsonObject().get("password").getAsString());
+        hikariConfig.setJdbcUrl(postgresConfig.get("url").getAsString());
+        hikariConfig.setUsername(postgresConfig.get("username").getAsString());
+        hikariConfig.setPassword(postgresConfig.get("password").getAsString());
         hikariConfig.addDataSourceProperty("cachePrepStmts", "true");
         hikariConfig.addDataSourceProperty("prepStmtCacheSize", "250");
         hikariConfig.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
@@ -83,9 +84,13 @@ public class Main {
 
         try {
             PostgresFoundationDatabase dbController = new PostgresFoundationDatabase(dataSource);
-            MapImageGetter mapImageGetter = new CachedTomTomAPICommunicator(new BaiscTomTomAPICommunicator(
-                    config.get("tomtom_api_key").getAsString()
-            ));
+
+            String redisURL = config.get("db").getAsJsonObject().get("redis").getAsJsonObject().get("url").getAsString();
+            MapImageGetter mapImageGetter = new CachedTomTomAPICommunicator(
+                    redisURL,
+                    new BaiscTomTomAPICommunicator(config.get("tomtom_api_key").getAsString())
+            );
+
             EndpointController controller = new EndpointController(mapImageGetter, dbController, tokenManager);
 
             PathMappingsHandler pathMappingsHandler = new PathMappingsHandler();
