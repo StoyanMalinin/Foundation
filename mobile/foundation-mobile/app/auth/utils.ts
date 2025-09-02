@@ -67,19 +67,16 @@ export async function isLoggedIn() {
 }
 
 export async function login(username: string, password: string): Promise<string | null> {
-    console.log("start fetch");
-    const result = await fetch("https://192.168.1.47:6969/login-mobile", {
+    const result = await fetch("https://ffoundationn.fun:6969/login-mobile", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
         },
         body: JSON.stringify({ username, password })
     });
-    console.log("fetch done", result.ok);
     if (!result.ok) return result.text();
 
     const json = await result.json();
-    console.log("json", json);
     const jwt = json["jwt"];
     const refreshToken = json["refresh_token"];
     if (!jwt || !refreshToken) return "Server result is malformed";

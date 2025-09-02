@@ -11,7 +11,7 @@ export default function Index() {
       }}
     >
       <AuthWrapper>
-        <Text>Edit app/index.tsx to edit this screen.</Text>
+        <Text>Welcome to the Foundation!</Text>
       </AuthWrapper>
     </View>
   );
