@@ -45,35 +45,32 @@ export default function Index() {
       }}
       >
         <Text style={{ fontWeight: "bold", fontSize: 26 }}>Selected Searches:</Text>
-        {selectedSearches.length == 0 ? <Text>None</Text> : selectedSearches.map(search => (
-          <View key={search.id} style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text>{search.title}   </Text>
-            <Button onPress={() => {
-              setIsSelected(search.id, false);
-              setSearches(searches.map(s => 
-                s.id === search.id ? { ...s, userSelected: false } : s
-              ));
-            }}>Unselect</Button>
-          </View>
-        ))}
+        {renderSearches(selectedSearches, [searches, setSearches], false)}
 
         <Text>{"\n\n"}</Text>
 
         <Text style={{ fontWeight: "bold", fontSize: 26 }}>Searches not selected:</Text>
-        {notSelectedSearches.length == 0 ? <Text>None</Text> : notSelectedSearches.map(search => (
-          <View key={search.id} style={{ flexDirection: "row", alignItems: "center" }}>
-            <Text>{search.title}  </Text>
-            <Button onPress={() => {
-              setIsSelected(search.id, true);
-              setSearches(searches.map(s => 
-                s.id === search.id ? { ...s, userSelected: true } : s
-              ));
-            }}>Select</Button>
-          </View>
-        ))}
+        {renderSearches(notSelectedSearches, [searches, setSearches], true)}
       </View>
     </AuthWrapper>
   );
+}
+
+function renderSearches(searchesToRender, [searches, setSearches], select) {
+  if (searchesToRender.length == 0) {
+    return <Text>None</Text>;
+  }
+
+  return searchesToRender.map(search => (
+    <View key={search.id} style={{ flexDirection: "row", alignItems: "center" }}>
+      <Text>{search.title}  </Text>
+      <Button onPress={() => {
+        setIsSelected(search.id, select);
+        searches.find(s => s.id === search.id)!.userSelected = select;
+        setSearches(searches);
+      }}>{select ? "Select" : "Unselect"}</Button>
+    </View>
+  ));
 }
 
 async function getIsSelected(searchId: number): Promise<boolean> {
