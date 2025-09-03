@@ -64,10 +64,9 @@ function renderSearches(searchesToRender, [searches, setSearches], select) {
   return searchesToRender.map(search => (
     <View key={search.id} style={{ flexDirection: "row", alignItems: "center" }}>
       <Text>{search.title}  </Text>
-      <Button onPress={() => {
-        setIsSelected(search.id, select);
-        searches.find(s => s.id === search.id)!.userSelected = select;
-        setSearches(searches);
+      <Button onPress={async () => {
+        await setIsSelected(search.id, select);
+        setSearches(searches.map(s => s.id === search.id ? {...s, userSelected: select} : s));
       }}>{select ? "Select" : "Unselect"}</Button>
     </View>
   ));

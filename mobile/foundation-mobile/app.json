@@ -16,7 +16,13 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.WAKE_LOCK",
+        "android.permission.POST_NOTIFICATIONS"
+      ],
+      "package": "com.anonymous.foundationmobile"
     },
     "web": {
       "bundler": "metro",
@@ -34,7 +40,17 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      [
+          "expo-build-properties",
+          {
+              "android": {
+                  "compileSdkVersion": 35,
+                  "targetSdkVersion": 35
+              }
+          }
+      ],
+      "expo-dev-client"
     ],
     "experiments": {
       "typedRoutes": true
