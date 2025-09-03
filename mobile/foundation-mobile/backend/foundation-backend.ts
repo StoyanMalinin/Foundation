@@ -23,7 +23,7 @@ class _FoundationBackend {
     }
 
     refreshJWT(refreshToken: string) {
-        return fetch(`${BACKEND_API_BASE_URL}/refresh-jwt`, {
+        return fetch(`${BACKEND_API_BASE_URL}/refresh-jwt-mobile`, {
             method: "POST",
             headers: {
                 "Authorization": `Bearer ${refreshToken}`
