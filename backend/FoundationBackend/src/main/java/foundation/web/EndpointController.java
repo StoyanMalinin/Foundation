@@ -20,6 +20,7 @@ import org.eclipse.jetty.server.Request;
 import org.eclipse.jetty.server.Response;
 import org.eclipse.jetty.util.Fields;
 import org.eclipse.jetty.util.Callback;
+import org.infinispan.commons.dataconversion.internal.Json;
 import org.mindrot.jbcrypt.BCrypt;
 
 import javax.imageio.ImageIO;
@@ -141,7 +142,7 @@ public class EndpointController {
         return true;
     }
 
-    private String getAuthorizationHeaderValue(Request request) throws JWTVerificationException {
+    private String getAuthorizationHeaderValueBrowser(Request request) throws JWTVerificationException {
         String authHeader = request.getHeaders().get("Authorization");
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             throw new JWTVerificationException("Authorization bearer header is missing");
@@ -150,8 +151,17 @@ public class EndpointController {
         return authHeader.substring(8, authHeader.length() - 1); // Remove "Bearer "" prefix and " suffix
     }
 
+    private String getAuthorizationHeaderValueMobile(Request request) throws JWTVerificationException {
+        String authHeader = request.getHeaders().get("Authorization");
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            throw new JWTVerificationException("Authorization bearer header is missing");
+        }
+
+        return authHeader.substring(7); // Remove 'Bearer ' prefix
+    }
+
     private String getActorUsernameFromHeader(Request request) {
-        String jwt = getAuthorizationHeaderValue(request);
+        String jwt = getAuthorizationHeaderValueBrowser(request);
         return tokenManager.getUsernameFromToken(jwt);
     }
 
@@ -324,13 +334,50 @@ public class EndpointController {
     public boolean handleRefreshJWT(Request request, Response response, Callback callback) {
         String refreshTokenValue;
         try {
-            refreshTokenValue = getAuthorizationHeaderValue(request);
+            refreshTokenValue = getAuthorizationHeaderValueBrowser(request);
         } catch (JWTVerificationException e) {
             response.setStatus(401);
             Content.Sink.write(response, true, "Unauthorized - " + e.getMessage(), callback);
             return true;
         }
 
+        RefreshToken refreshToken = refreshJWTLogic(response, callback, refreshTokenValue);
+        if (refreshToken == null) return true; // failed
+
+        String jwt = tokenManager.generateToken(refreshToken.username());
+
+        response.setStatus(200);
+        setAuthCookies(response, jwt, refreshToken.token());
+
+        callback.succeeded();
+        return true;
+    }
+
+    public boolean handleRefreshJWTMobile(Request request, Response response, Callback callback) {
+        String refreshTokenValue;
+        try {
+            refreshTokenValue = getAuthorizationHeaderValueMobile(request);
+        } catch (JWTVerificationException e) {
+            response.setStatus(401);
+            Content.Sink.write(response, true, "Unauthorized - " + e.getMessage(), callback);
+            return true;
+        }
+
+        RefreshToken refreshToken = refreshJWTLogic(response, callback, refreshTokenValue);
+        if (refreshToken == null) return true; // failed
+
+        String jwt = tokenManager.generateToken(refreshToken.username());
+
+        response.setStatus(200);
+        JsonObject jsonResponse = new JsonObject();
+        jsonResponse.addProperty("jwt", jwt);
+
+        response.getHeaders().put("Content-Type", "application/json");
+        Content.Sink.write(response, true, jsonResponse.toString(), callback);
+        return true;
+    }
+
+    private RefreshToken refreshJWTLogic(Response response, Callback callback, String refreshTokenValue) {
         RefreshToken refreshToken;
         try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
             try {
@@ -340,7 +387,7 @@ public class EndpointController {
                 Content.Sink.write(response, true, "Internal server error - could not get refresh token: " + e.getMessage(), callback);
 
                 tx.rollback();
-                return true;
+                return null;
             }
 
             if (refreshToken == null) {
@@ -348,7 +395,7 @@ public class EndpointController {
                 Content.Sink.write(response, true, "Unauthorized - invalid or missing refresh token", callback);
 
                 tx.rollback();
-                return true;
+                return null;
             }
 
             if (refreshToken.expiresAt().before(Timestamp.from(Instant.now()))) {
@@ -359,27 +406,21 @@ public class EndpointController {
                     Content.Sink.write(response, true, "Internal server error - could not delete expired refresh token: " + e.getMessage(), callback);
 
                     tx.rollback();
-                    return true;
+                    return null;
                 }
 
                 response.setStatus(401);
                 Content.Sink.write(response, true, "Unauthorized - refresh token has expired", callback);
 
-                return true;
+                return null;
             }
         } catch (Exception e) {
             response.setStatus(500);
             Content.Sink.write(response, true, "Internal server error - could not create transaction: " + e.getMessage(), callback);
-            return true;
+            return null;
         }
 
-        String jwt = tokenManager.generateToken(refreshToken.username());
-
-        response.setStatus(200);
-        setAuthCookies(response, jwt, refreshToken.token());
-
-        callback.succeeded();
-        return true;
+        return refreshToken;
     }
 
     public boolean handleCheckAuth(Request request, Response response, Callback callback) {

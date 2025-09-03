@@ -232,6 +232,22 @@ public class Main {
             );
 
             pathMappingsHandler.addMapping(
+                    new ServletPathSpec("/refresh-jwt-mobile"),
+                    new Handler.Abstract() {
+                        @Override
+                        public boolean handle(Request request, Response response, Callback callback) throws Exception {
+                            HandlerFunction fn = controller::handleRefreshJWTMobile;
+                            fn = MiddlewareUtils.applyMiddleware(
+                                    fn,
+                                    new EnsureHTTPMethodMiddleware("POST")
+                            );
+
+                            return fn.apply(request, response, callback);
+                        }
+                    }
+            );
+
+            pathMappingsHandler.addMapping(
                     new ServletPathSpec("/check-auth"),
                     new Handler.Abstract() {
                         @Override
