@@ -1,5 +1,7 @@
 import BackgroundService from 'react-native-background-actions';
 
+import * as Location from 'expo-location';
+
 async function sleepMs(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -14,7 +16,8 @@ export async function locationTask() {
 }
 
 async function sendLocation() {
-    console.log("Sending location...");
+    let location = await Location.getCurrentPositionAsync({});
+    console.log("Sending location...", location);
 }
 
 export async function checkLocationTaskRunning() {

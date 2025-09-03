@@ -1,4 +1,5 @@
 import { Button } from "@react-navigation/elements";
+import * as Location from 'expo-location';
 import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
@@ -7,6 +8,7 @@ import { checkLocationTaskRunning, startLocationTask, stopLocationTask } from ".
 
 export default function Index() {
   const router = useRouter();
+  const [locationPermissions, setLocationPermissions] = useState<boolean | null>(null);
   const [isLocationTaskRunning, setIsLocationTaskRunning] = useState(false);
   useEffect(() => {
     const f = async function() {
@@ -15,6 +17,25 @@ export default function Index() {
 
     f();
   }, []);
+  useEffect(() => {
+    const f = async function() {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+          setLocationPermissions(false);
+          return;
+      }
+
+      setLocationPermissions(true);
+    };
+
+    f();
+  }, []);
+
+  if (locationPermissions === null) {
+    return <Text>Requesting location permissions...</Text>;
+  } else if (locationPermissions === false) {
+    return <Text>Location permissions are denied. Please enable them.</Text>;
+  }
 
   const locationTaskState = isLocationTaskRunning ? 
     <Text style={{color: "green", fontSize: 20}}>Location is being tracked</Text> :
