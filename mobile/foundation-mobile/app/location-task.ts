@@ -1,6 +1,8 @@
 import BackgroundService from 'react-native-background-actions';
 
+import { FoundationBackend } from '@/backend/foundation-backend';
 import * as Location from 'expo-location';
+import { getSelectedSearches } from './search-selection/storage';
 
 async function sleepMs(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
@@ -8,16 +10,19 @@ async function sleepMs(ms: number) {
 
 let locationTaskRunningState = true;
 export async function locationTask() {
-    console.log("hello");
     while (locationTaskRunningState) {
         await sendLocation();
-        await sleepMs(1000);
+        await sleepMs(5000);
     }
 }
 
 async function sendLocation() {
-    let location = await Location.getCurrentPositionAsync({});
-    console.log("Sending location...", location);
+    const location = await Location.getCurrentPositionAsync({});
+    const selectedSearches = await getSelectedSearches();
+
+    const injectResult = await FoundationBackend.injectPresences(selectedSearches, [{lat: location.coords.latitude, lon: location.coords.longitude, recorded_at: Math.trunc(Date.now())}]);
+
+    console.log("Inject result:", injectResult.status);
 }
 
 export async function checkLocationTaskRunning() {

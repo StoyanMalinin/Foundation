@@ -1,9 +1,9 @@
 import { FoundationBackend } from "@/backend/foundation-backend";
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Button } from "@react-navigation/elements";
 import React, { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { AuthWrapper } from "../auth/auth-wrapper";
+import { getIsSelected, setIsSelected } from "./storage";
 
 type SearchMetadata = {
   id: number;
@@ -29,7 +29,7 @@ export default function Index() {
   }, []);
 
   if (searches == null) {
-    return <View><Text>Loading...</Text></View>
+    return <View><Text>Loading searches...</Text></View>
   }
 
   const selectedSearches = searches.filter(search => search.userSelected);
@@ -70,17 +70,4 @@ function renderSearches(searchesToRender, [searches, setSearches], select) {
       }}>{select ? "Select" : "Unselect"}</Button>
     </View>
   ));
-}
-
-async function getIsSelected(searchId: number): Promise<boolean> {
-  const value = await AsyncStorage.getItem(`search_${searchId}_selected`);
-  if (value === null) {
-    return false;
-  }
-
-  return value === "true";
-}
-
-async function setIsSelected(searchId: number, isSelected: boolean) {
-  await AsyncStorage.setItem(`search_${searchId}_selected`, JSON.stringify(isSelected));
 }

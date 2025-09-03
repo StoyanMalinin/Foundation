@@ -1,3 +1,5 @@
+import { getToken } from "@/app/auth/utils";
+
 const BACKEND_API_BASE_URL = "https://ffoundationn.fun:6969"
 
 class _FoundationBackend {
@@ -27,6 +29,23 @@ class _FoundationBackend {
                 "Authorization": `Bearer ${refreshToken}`
             }
         })
+    }
+
+    async injectPresences(
+        searchIds: number[], 
+        presences: {lat: number, lon: number, recorded_at: number}[]
+    ) {
+        return fetch(`${BACKEND_API_BASE_URL}/inject-presences`, {
+            method: "PUT",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ 
+                "search_ids": searchIds,
+                "presences": presences,
+                "jwt": (await getToken("jwt")),
+            })
+        });
     }
 }
 
