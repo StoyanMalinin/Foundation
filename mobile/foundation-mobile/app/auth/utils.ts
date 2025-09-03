@@ -45,9 +45,11 @@ export async function isLoggedIn() {
     if (jwt == null) return false;
 
     const decoded = jwtDecode(jwt);
-    if (decoded?.exp && decoded?.exp > Date.now() / 1000) {
+    console.log("decoded", decoded);
+    console.log("now", Date.now());
+    if (decoded?.exp && decoded?.exp * 1000 > Date.now()) {
         return true;
-    }   
+    }
 
     const refreshToken = await getToken("refreshToken");
     if (refreshToken == null) return false;

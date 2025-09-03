@@ -15,7 +15,7 @@ export function AuthWrapper({ children }: { children: ReactNode }) {
   }, []);
 
   if (isAuthenticated == null) {
-    return <Text>Loading...</Text>;
+    return <Text>Loading auth state...</Text>;
   }
 
   if (!isAuthenticated) {
