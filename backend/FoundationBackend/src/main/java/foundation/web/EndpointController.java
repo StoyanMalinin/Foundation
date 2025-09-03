@@ -341,7 +341,7 @@ public class EndpointController {
             return true;
         }
 
-        RefreshToken refreshToken = refreshJWTLogic(response, refreshTokenValue);
+        RefreshToken refreshToken = refreshJWTLogic(response, callback, refreshTokenValue);
         if (refreshToken == null) return true; // failed
 
         String jwt = tokenManager.generateToken(refreshToken.username());
@@ -363,7 +363,7 @@ public class EndpointController {
             return true;
         }
 
-        RefreshToken refreshToken = refreshJWTLogic(response, refreshTokenValue);
+        RefreshToken refreshToken = refreshJWTLogic(response, callback, refreshTokenValue);
         if (refreshToken == null) return true; // failed
 
         String jwt = tokenManager.generateToken(refreshToken.username());
@@ -377,7 +377,7 @@ public class EndpointController {
         return true;
     }
 
-    private RefreshToken refreshJWTLogic(Response response, String refreshTokenValue) {
+    private RefreshToken refreshJWTLogic(Response response, Callback callback, String refreshTokenValue) {
         RefreshToken refreshToken;
         try (PostgresFoundationDatabaseTransaction tx = dbController.createTransaction()) {
             try {
