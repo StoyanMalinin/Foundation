@@ -3,7 +3,7 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { Text, View } from "react-native";
 import { AuthWrapper } from "./auth/auth-wrapper";
-import { checkLocationTaskRunning, startLocationTask } from "./location-task";
+import { checkLocationTaskRunning, startLocationTask, stopLocationTask } from "./location-task";
 
 export default function Index() {
   const router = useRouter();
@@ -50,6 +50,7 @@ export default function Index() {
 }
 
 async function stopTracking(setIsLocationTaskRunning) {
+  await stopLocationTask();
   setIsLocationTaskRunning(false);
 }
 

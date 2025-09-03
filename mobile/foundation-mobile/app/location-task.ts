@@ -4,9 +4,10 @@ async function sleepMs(ms: number) {
     return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
+let locationTaskRunningState = true;
 export async function locationTask() {
     console.log("hello");
-    while (true) {
+    while (locationTaskRunningState) {
         await sendLocation();
         await sleepMs(1000);
     }
@@ -17,7 +18,7 @@ async function sendLocation() {
 }
 
 export async function checkLocationTaskRunning() {
-    return false;
+    return BackgroundService.isRunning();
 }
 
 export async function startLocationTask() {
@@ -34,7 +35,11 @@ export async function startLocationTask() {
         parameters: {},
     };
 
-    console.log("start location task");
+    locationTaskRunningState = true;
     await BackgroundService.start(locationTask, options);
-    console.log("started location task");
+}
+
+export async function stopLocationTask() {
+    locationTaskRunningState = false;
+    await BackgroundService.stop();
 }
