@@ -1,4 +1,4 @@
-import { getToken } from "@/app/auth/utils";
+import { getJWT } from "@/app/auth/utils";
 
 const BACKEND_API_BASE_URL = "https://ffoundationn.fun:6969"
 
@@ -43,7 +43,7 @@ class _FoundationBackend {
             body: JSON.stringify({ 
                 "search_ids": searchIds,
                 "presences": presences,
-                "jwt": (await getToken("jwt")),
+                "jwt": (await getJWT()),
             })
         });
     }

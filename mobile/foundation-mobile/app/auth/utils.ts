@@ -40,28 +40,32 @@ export async function getToken(tokenName: string): Promise<string | null> {
     }
 }
 
-export async function isLoggedIn() {
+export async function getJWT(): Promise<string | null> {
     const jwt = await getToken("jwt");
-    if (jwt == null) return false;
+    if (jwt == null) return null;
 
     const decoded = jwtDecode(jwt);
     console.log("decoded", decoded);
     console.log("now", Date.now());
     if (decoded?.exp && decoded?.exp * 1000 > Date.now()) {
-        return true;
+        return jwt;
     }
 
     const refreshToken = await getToken("refreshToken");
-    if (refreshToken == null) return false;
+    if (refreshToken == null) return null;
 
     const result = await FoundationBackend.refreshJWT(refreshToken);
-    if (!result.ok) return false;
+    if (!result.ok) return null;
 
     const newJWT = (await result.json()).jwt;
-    if (!newJWT) return false;
+    if (!newJWT) return null;
 
     await saveToken("jwt", newJWT);
-    return true;
+    return newJWT;
+}
+
+export async function isLoggedIn() {
+    return (await getJWT()) != null;
 }
 
 export async function login(username: string, password: string): Promise<string | null> {
