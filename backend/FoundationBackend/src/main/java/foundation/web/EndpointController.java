@@ -863,7 +863,9 @@ public class EndpointController {
                     tx.rollback();
                     return true;
                 }
-                if (i + 1 < allPresences.size() && allPresences.get(i).distanceTo(allPresences.get(i+1)) > 0.0001) {
+                if (i + 1 < allPresences.size()
+                        && Duration.ofMillis(allPresences.get(i + 1).timestamp() - allPresences.get(i).timestamp()).toMinutes() < 5
+                        && allPresences.get(i).distanceTo(allPresences.get(i+1)) > 0.0001) {
                     response.setStatus(400);
                     Content.Sink.write(response, true, "Bad request - presences are too far from each other", callback);
 
