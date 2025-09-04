@@ -8,17 +8,20 @@ export async function middleware(request: NextRequest) {
     const jwtRaw = request.cookies.get("jwt")?.value;
     const jwt = jwtRaw == undefined ? undefined : jwtDecode(jwtRaw);
     const jwtExp = jwt?.exp ?? 0;
+    console.log(jwtRaw);
 
     const bufferTimeMs = 1 * 60 * 1000; // 1 minute
     if (!jwt || Date.now() >= jwtExp * 1000 + bufferTimeMs) {
         const refreshToken = request.cookies.get("refresh_token")?.value;
-        if (!refreshToken) {
+        console.log(refreshToken);
+	if (!refreshToken) {
             if (!notLoggedInRedirect) return NextResponse.next();
             return NextResponse.redirect(new URL("/auth/login", request.nextUrl.origin));
         }
 
         const jwtRefresh = await FoundationBackend.refreshToken(refreshToken);
-        if (!jwtRefresh.ok) {
+        console.log(jwtRefresh.status);
+	if (!jwtRefresh.ok) {
             if (!notLoggedInRedirect) return NextResponse.next();
             return NextResponse.redirect(new URL("/auth/login", request.nextUrl.origin));
         }
