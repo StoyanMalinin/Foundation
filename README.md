@@ -4,6 +4,7 @@ This is a full-fledged platform **(still under construction)** dedicated to help
 | | | |
 |--|--|--|
 | <img src="docs/dashboard.JPG" width="192" height="108" /> | <img src="docs/list.JPG" width="192" height="108" /> | <img src="docs/map.JPG" width="192" height="108" /> |
+| <img src="docs/mobile-dashboard.JPG" height="200"> | <img src="docs/mobile-list.JPG" height="200"> | 
 
 # [Developers only] Architecture & deployment
 
@@ -63,7 +64,12 @@ In case you want to run the backend service separately (not as a docker containe
 Then go to `deploy/config/config.json` and change the fields, so that it match your current setup. You will usually have to change the Tomtom API key, your kestore (`.jks` file) password and optionally the `jwt_secret`.
 
 #### Build docker images
-Bare in mind that this can be a bit slow, especially the first time (a couple minutes per image).
+Bare in mind that this can be a bit slow, especially the first time (a couple minutes per image). You can build everything with the following script:
+```
+cd deploy/docker/
+./build.sh
+```
+In case you want more control, you can follow the instructions below.
 
 ##### Database
 The PostgreSQL DB uses a custom image. In order to obtain it, you have to `cd deploy/docker/` from repo root and then run 
@@ -90,7 +96,7 @@ You can also run the backend as a standalone process, by running just the DB wit
 ```
 docker-compose -f db.docker-compose.yaml up
 ```
-and then goint to `backend/FoundationBackend` and running 
+and then going to `backend/FoundationBackend` and running 
 ```
 mvn install
 mvn package
@@ -121,8 +127,8 @@ npm run start
 # Future work
 There is a lot of work that can be done on the project, but here are the main points:
 
-- Complete the mobile app
-- Polish the web frontend (it currently works, but it is very bare-bones)
+- Polish the mobile app (it currently works, but it is very bare-bones)
+- Polish the web frontend (same as above)
 - Stress test for scalability with many users
 - Simplify the deployment/development process
 - Polish the RESTful API interface to be more idiomatic
