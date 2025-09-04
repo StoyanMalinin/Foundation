@@ -6,7 +6,7 @@ import { useSearchParams } from "next/navigation";
 import { NavigationBar } from "../navigation/navigation-bar";
 
 export default function Page() {
-    return <MapPage />
+    return <Suspense><MapPage /></Suspense>;
 }
 
 function MapPage() {
