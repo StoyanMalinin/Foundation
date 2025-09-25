@@ -6,7 +6,7 @@ export async function middleware(request: NextRequest) {
     const notLoggedInRedirect = request.nextUrl.pathname.startsWith('/dashboard');
     
     const jwtRaw = request.cookies.get("jwt")?.value;
-    const jwt = jwtRaw == undefined ? undefined : jwtDecode(jwtRaw);
+    const jwt = jwtRaw == "\"\"" || jwtRaw == undefined ? undefined : jwtDecode(jwtRaw);
     const jwtExp = jwt?.exp ?? 0;
     console.log(jwtRaw);
 
